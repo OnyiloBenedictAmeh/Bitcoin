@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Complete your card payment."
+    >
+
+    <title>Card Payment | Store</title>
+
+    <link
+        rel="stylesheet"
+        href="css/main.css"
+    >
+
+    <link
+        href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="site-header">
+
+        <div class="container header-inner">
+
+            <a
+                href="index.html"
+                class="logo"
+            >
+
+                <span class="logo-mark">
+                    S
+                </span>
+
+                <span class="logo-text">
+                    STORE
+                </span>
+
+            </a>
+
+
+            <div class="checkout-header-title">
+
+                <i class="bx bx-credit-card"></i>
+
+                Card Payment
+
+            </div>
+
+
+            <a
+                href="checkout.html"
+                class="checkout-back"
+            >
+
+                <i class="bx bx-left-arrow-alt"></i>
+
+                Back to Checkout
+
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+
+    <main>
+
+        <section class="payment-page">
+
+            <div class="container">
+
+                <!-- =====================
+                     CARD PAYMENT
+                ====================== -->
+
+                <div
+                    class="payment-container"
+                    id="cardPayment"
+                >
+
+                    <div class="payment-heading">
+
+                        <span class="eyebrow">
+                            PAYMENT
+                        </span>
+
+                        <h1>
+                            Pay with Card
+                        </h1>
+
+                        <p>
+                            Enter your card details
+                            securely to complete your order.
+                        </p>
+
+                    </div>
+
+
+                    <!-- =====================
+                         PAYMENT CARD
+                    ====================== -->
+
+                    <div class="payment-card">
+
+                        <!-- AMOUNT -->
+
+                        <div class="payment-amount">
+
+                            <span>
+                                Amount due
+                            </span>
+
+                            <strong id="paymentUsd">
+                                $0.00
+                            </strong>
+
+                        </div>
+
+
+                        <!-- CARD FORM -->
+
+                        <div class="card-payment-form">
+
+                            <!-- CARDHOLDER -->
+
+                            <div class="form-group">
+
+                                <label for="cardName">
+                                    Cardholder name
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="cardName"
+                                    name="cardName"
+                                    placeholder="John Doe"
+                                    autocomplete="cc-name"
+                                >
+
+                            </div>
+
+
+                            <!-- CARD NUMBER -->
+
+                            <div class="form-group">
+
+    <label for="cardNumber">
+        Card number
+    </label>
+
+    <div class="card-input-wrapper">
+
+        <i
+            class="bx bx-credit-card"
+            id="cardTypeIcon"
+        ></i>
+
+        <input
+            type="text"
+            id="cardNumber"
+            name="cardNumber"
+            placeholder="1234 5678 9012 3456"
+            inputmode="numeric"
+            autocomplete="cc-number"
+            maxlength="19"
+        >
+
+    </div>
+
+    <small
+        id="cardType"
+        class="card-type"
+        aria-live="polite"
+    ></small>
+
+</div>
+
+
+                            <!-- EXPIRY + CVV -->
+
+                            <div class="form-grid">
+
+                                <div class="form-group">
+
+                                    <label for="cardExpiry">
+                                        Expiry date
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        id="cardExpiry"
+                                        name="cardExpiry"
+                                        placeholder="MM/YY"
+                                        inputmode="numeric"
+                                        autocomplete="cc-exp"
+                                        maxlength="5"
+                                    >
+
+                                </div>
+
+
+                                <div class="form-group">
+
+                                    <label for="cardCvv">
+                                        CVV
+                                    </label>
+
+                                    <div class="card-input-wrapper">
+
+                                        <i class="bx bx-lock-alt"></i>
+
+                                        <input
+                                            type="password"
+                                            id="cardCvv"
+                                            name="cardCvv"
+                                            placeholder="123"
+                                            inputmode="numeric"
+                                            autocomplete="cc-csc"
+                                            maxlength="4"
+                                        >
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ERROR -->
+
+                        <div
+                            class="checkout-error"
+                            id="cardPaymentError"
+                            hidden
+                        >
+
+                            <i class="bx bx-error-circle"></i>
+
+                            <span></span>
+
+                        </div>
+
+
+                        <!-- SECURITY -->
+
+                        <div class="payment-status">
+
+                            <i class="bx bx-shield-quarter"></i>
+
+                            <div>
+
+                                <strong>
+                                    Secure payment
+                                </strong>
+
+                                <p>
+                                    Your card information is
+                                    protected during checkout.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- PAY BUTTON -->
+
+                        <button
+                            type="button"
+                            class="btn btn-primary payment-demo-btn"
+                            id="payWithCard"
+                        >
+
+                            <i class="bx bx-lock-alt"></i>
+
+                            Pay Now
+
+                        </button>
+
+
+                        <p class="demo-notice">
+
+                            MVP demo mode — no real card
+                            transaction will be processed.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =====================
+                     SUCCESS
+                ====================== -->
+
+                <div
+                    class="payment-success"
+                    id="cardPaymentSuccess"
+                    hidden
+                >
+
+                    <div class="success-icon">
+
+                        <i class="bx bx-check"></i>
+
+                    </div>
+
+
+                    <h1>
+                        Payment successful
+                    </h1>
+
+
+                    <p>
+                        Your card payment has been
+                        received and your order is confirmed.
+                    </p>
+
+
+                    <strong id="successOrderId"></strong>
+
+
+                    <div class="payment-success-actions">
+
+                        <a
+                            href="order.html"
+                            id="viewOrder"
+                            class="btn btn-primary"
+                        >
+
+                            View Order
+
+                            <i class="bx bx-right-arrow-alt"></i>
+
+                        </a>
+
+
+                        <a
+                            href="shop.html"
+                            class="btn btn-secondary"
+                        >
+
+                            Continue Shopping
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================== -->
+
+    <script
+        type="module"
+        src="js/card-payment.js"
+    ></script>
+
+</body>
+
+</html>

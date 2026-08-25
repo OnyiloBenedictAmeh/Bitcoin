@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="View product details and add products to your cart."
+    >
+
+    <title>Product | Store</title>
+
+    <link
+        rel="stylesheet"
+        href="css/main.css"
+    >
+
+    <link
+        href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="site-header">
+
+        <div class="container header-inner">
+
+            <a
+                href="index.html"
+                class="logo"
+            >
+
+                <span class="logo-mark">
+                    S
+                </span>
+
+                <span class="logo-text">
+                    STORE
+                </span>
+
+            </a>
+
+
+            <nav
+                class="main-nav"
+                id="mainNav"
+            >
+
+                <a
+                    href="index.html"
+                    class="nav-link"
+                >
+                    Home
+                </a>
+
+                <a
+                    href="shop.html"
+                    class="nav-link active"
+                >
+                    Shop
+                </a>
+
+                <a
+                    href="index.html#categories"
+                    class="nav-link"
+                >
+                    Categories
+                </a>
+
+                <a
+                    href="index.html#deals"
+                    class="nav-link"
+                >
+                    Deals
+                </a>
+
+            </nav>
+
+
+            <div class="header-actions">
+
+                <button
+                    class="icon-btn"
+                    id="searchToggle"
+                    type="button"
+                    aria-label="Search"
+                >
+
+                    <i class="bx bx-search"></i>
+
+                </button>
+
+
+                <a
+                    href="account.html"
+                    class="icon-btn"
+                    aria-label="Account"
+                >
+
+                    <i class="bx bx-user"></i>
+
+                </a>
+
+
+                <a
+                    href="cart.html"
+                    class="cart-btn"
+                    aria-label="Shopping cart"
+                >
+
+                    <i class="bx bx-shopping-bag"></i>
+
+                    <span class="cart-count">
+                        0
+                    </span>
+
+                </a>
+
+
+                <button
+                    class="menu-btn"
+                    id="menuBtn"
+                    type="button"
+                    aria-label="Open menu"
+                >
+
+                    <i class="bx bx-menu"></i>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         PRODUCT
+    ========================== -->
+
+    <main>
+
+        <section class="product-page">
+
+            <div class="container">
+
+                <div
+                    class="product-detail"
+                    id="productDetail"
+                >
+
+                    <!-- Loaded by JavaScript -->
+
+                </div>
+
+
+                <!-- =====================
+                     RELATED PRODUCTS
+                ====================== -->
+
+                <section class="related-products">
+
+                    <div class="section-heading">
+
+                        <div>
+
+                            <span class="eyebrow">
+                                YOU MAY ALSO LIKE
+                            </span>
+
+                            <h2>
+                                Related products
+                            </h2>
+
+                        </div>
+
+
+                        <a
+                            href="shop.html"
+                            class="text-link"
+                        >
+                            View all
+                            <i class="bx bx-right-arrow-alt"></i>
+                        </a>
+
+                    </div>
+
+
+                    <div
+                        class="product-grid"
+                        id="relatedProducts"
+                    >
+
+                        <!-- Loaded by JavaScript -->
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer class="site-footer">
+
+        <div class="container footer-grid">
+
+            <div class="footer-brand">
+
+                <a
+                    href="index.html"
+                    class="logo"
+                >
+
+                    <span class="logo-mark">
+                        S
+                    </span>
+
+                    <span class="logo-text">
+                        STORE
+                    </span>
+
+                </a>
+
+                <p>
+                    A modern shopping experience
+                    built for everyone.
+                </p>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h3>
+                    Shop
+                </h3>
+
+                <a href="shop.html">
+                    All Products
+                </a>
+
+                <a href="shop.html">
+                    Categories
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h3>
+                    Customer
+                </h3>
+
+                <a href="account.html">
+                    My Account
+                </a>
+
+                <a href="cart.html">
+                    My Orders
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h3>
+                    Help
+                </h3>
+
+                <a href="#">
+                    Contact
+                </a>
+
+                <a href="#">
+                    Shipping
+                </a>
+
+                <a href="#">
+                    Returns
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-bottom">
+
+            <div class="container">
+
+                <p>
+
+                    &copy;
+
+                    <span id="currentYear"></span>
+
+                    Store. All rights reserved.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <script
+        type="module"
+        src="js/product.js"
+    ></script>
+
+</body>
+
+</html>

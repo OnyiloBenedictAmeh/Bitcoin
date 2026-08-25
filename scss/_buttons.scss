@@ -1,0 +1,40 @@
+@use "variables" as *;
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    min-height: 50px;
+
+    padding: 0 24px;
+
+    border: 1px solid transparent;
+    border-radius: $radius-full;
+
+    font-weight: 700;
+
+    transition: $transition;
+}
+
+.btn-primary {
+    background: $color-primary;
+    color: #fff;
+
+    &:hover {
+        background: $color-primary-hover;
+        transform: translateY(-2px);
+    }
+}
+
+.btn-secondary {
+    border-color: $color-border;
+
+    background: #fff;
+
+    &:hover {
+        background: $color-surface;
+    }
+}

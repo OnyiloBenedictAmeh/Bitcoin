@@ -1,0 +1,63 @@
+// ==============================
+// COLORS
+// ==============================
+
+$color-primary: #111111;
+$color-primary-hover: #292929;
+
+$color-accent: #f5a623;
+
+$color-background: #ffffff;
+$color-surface: #f7f7f7;
+$color-surface-dark: #eeeeee;
+
+$color-text: #111111;
+$color-text-secondary: #666666;
+$color-text-muted: #999999;
+
+$color-border: #e5e5e5;
+
+
+// ==============================
+// TYPOGRAPHY
+// ==============================
+
+$font-main:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+
+// ==============================
+// LAYOUT
+// ==============================
+
+$container-width: 1240px;
+
+$header-height: 76px;
+
+$radius-sm: 8px;
+$radius-md: 14px;
+$radius-lg: 22px;
+$radius-full: 999px;
+
+
+// ==============================
+// SHADOWS
+// ==============================
+
+$shadow-sm:
+    0 4px 16px rgba(0, 0, 0, 0.06);
+
+$shadow-md:
+    0 12px 35px rgba(0, 0, 0, 0.09);
+
+
+// ==============================
+// TRANSITIONS
+// ==============================
+
+$transition:
+    0.25s ease;

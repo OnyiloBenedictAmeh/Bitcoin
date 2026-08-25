@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Browse our products and find something you'll love."
+    >
+
+    <title>Shop | Store</title>
+
+    <link rel="stylesheet" href="css/main.css">
+
+    <link
+        href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+        rel="stylesheet"
+    >
+</head>
+
+<body>
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="site-header">
+
+        <div class="container header-inner">
+
+            <a href="index.html" class="logo">
+                <span class="logo-mark">S</span>
+                <span class="logo-text">STORE</span>
+            </a>
+
+            <nav class="main-nav" id="mainNav">
+
+                <a href="index.html" class="nav-link">
+                    Home
+                </a>
+
+                <a
+                    href="shop.html"
+                    class="nav-link active"
+                >
+                    Shop
+                </a>
+
+                <a
+                    href="index.html#categories"
+                    class="nav-link"
+                >
+                    Categories
+                </a>
+
+                <a
+                    href="index.html#deals"
+                    class="nav-link"
+                >
+                    Deals
+                </a>
+
+            </nav>
+
+            <div class="header-actions">
+
+                <button
+                    class="icon-btn"
+                    id="searchToggle"
+                    type="button"
+                    aria-label="Search"
+                >
+                    <i class="bx bx-search"></i>
+                </button>
+
+                <a
+                    href="account.html"
+                    class="icon-btn"
+                    aria-label="Account"
+                >
+                    <i class="bx bx-user"></i>
+                </a>
+
+                <a
+                    href="cart.html"
+                    class="cart-btn"
+                    aria-label="Shopping cart"
+                >
+                    <i class="bx bx-shopping-bag"></i>
+                    <span class="cart-count">0</span>
+                </a>
+
+                <button
+                    class="menu-btn"
+                    id="menuBtn"
+                    type="button"
+                    aria-label="Open menu"
+                >
+                    <i class="bx bx-menu"></i>
+                </button>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         SEARCH BAR
+    ========================== -->
+
+    <div class="shop-search" id="shopSearch">
+
+        <div class="container">
+
+            <div class="search-box">
+
+                <i class="bx bx-search"></i>
+
+                <input
+                    type="search"
+                    id="productSearch"
+                    placeholder="Search products..."
+                    autocomplete="off"
+                >
+
+                <button
+                    type="button"
+                    id="clearSearch"
+                    aria-label="Clear search"
+                >
+                    <i class="bx bx-x"></i>
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <main>
+
+        <!-- =========================
+             SHOP HERO
+        ========================== -->
+
+        <section class="shop-hero">
+
+            <div class="container">
+
+                <span class="eyebrow">
+                    OUR STORE
+                </span>
+
+                <h1>
+                    Find something you'll love.
+                </h1>
+
+                <p>
+                    Explore our collection and discover
+                    products selected for you.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             SHOP CONTENT
+        ========================== -->
+
+        <section class="shop-section">
+
+            <div class="container">
+
+                <div class="shop-layout">
+
+                    <!-- SIDEBAR -->
+
+                    <aside class="shop-sidebar">
+
+                        <div class="filter-header">
+
+                            <h2>Filters</h2>
+
+                            <button
+                                type="button"
+                                id="clearFilters"
+                                class="clear-filters"
+                            >
+                                Clear
+                            </button>
+
+                        </div>
+
+
+                        <div class="filter-group">
+
+                            <h3>Categories</h3>
+
+                            <div
+                                class="category-filters"
+                                id="categoryFilters"
+                            >
+                                <!-- Rendered by JS -->
+                            </div>
+
+                        </div>
+
+
+                        <div class="filter-group">
+
+                            <h3>Price</h3>
+
+                            <div class="price-inputs">
+
+                                <input
+                                    type="number"
+                                    id="minPrice"
+                                    placeholder="Min"
+                                    min="0"
+                                >
+
+                                <span>—</span>
+
+                                <input
+                                    type="number"
+                                    id="maxPrice"
+                                    placeholder="Max"
+                                    min="0"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </aside>
+
+
+                    <!-- PRODUCTS -->
+
+                    <div class="shop-main">
+
+                        <div class="shop-toolbar">
+
+                            <div>
+                                <strong id="productResultCount">
+                                    0
+                                </strong>
+
+                                <span>
+                                    products
+                                </span>
+                            </div>
+
+                            <select
+                                id="sortProducts"
+                                aria-label="Sort products"
+                            >
+                                <option value="featured">
+                                    Featured
+                                </option>
+
+                                <option value="price-low">
+                                    Price: Low to High
+                                </option>
+
+                                <option value="price-high">
+                                    Price: High to Low
+                                </option>
+
+                                <option value="name">
+                                    Name: A to Z
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div
+                            class="product-grid shop-product-grid"
+                            id="shopProducts"
+                        >
+                            <!-- Products rendered here -->
+                        </div>
+
+
+                        <div
+                            class="empty-products"
+                            id="emptyProducts"
+                            hidden
+                        >
+
+                            <i class="bx bx-search-alt"></i>
+
+                            <h2>
+                                No products found
+                            </h2>
+
+                            <p>
+                                Try changing your search
+                                or filters.
+                            </p>
+
+                            <button
+                                class="btn btn-primary"
+                                id="emptyClearButton"
+                            >
+                                Clear Filters
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer class="site-footer">
+
+        <div class="container footer-grid">
+
+            <div class="footer-brand">
+
+                <a href="index.html" class="logo">
+
+                    <span class="logo-mark">
+                        S
+                    </span>
+
+                    <span class="logo-text">
+                        STORE
+                    </span>
+
+                </a>
+
+                <p>
+                    A modern shopping experience
+                    built for everyone.
+                </p>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h3>Shop</h3>
+
+                <a href="shop.html">
+                    All Products
+                </a>
+
+                <a href="index.html#categories">
+                    Categories
+                </a>
+
+                <a href="index.html#deals">
+                    Deals
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h3>Customer</h3>
+
+                <a href="account.html">
+                    My Account
+                </a>
+
+                <a href="orders.html">
+                    My Orders
+                </a>
+
+                <a href="cart.html">
+                    Cart
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <h3>Help</h3>
+
+                <a href="#">
+                    Contact
+                </a>
+
+                <a href="#">
+                    Shipping
+                </a>
+
+                <a href="#">
+                    Returns
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <div class="footer-bottom">
+
+            <div class="container">
+
+                <p>
+                    &copy;
+                    <span id="currentYear"></span>
+                    Store. All rights reserved.
+                </p>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <script type="module" src="js/shop.js"></script>
+
+</body>
+
+</html>

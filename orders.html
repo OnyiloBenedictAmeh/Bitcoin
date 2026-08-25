@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="View your order history."
+    >
+
+    <title>My Orders | Store</title>
+
+    <link
+        rel="stylesheet"
+        href="css/main.css"
+    >
+
+    <link
+        href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+        rel="stylesheet"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="site-header">
+
+        <div class="container header-inner">
+
+            <a
+                href="index.html"
+                class="logo"
+            >
+
+                <span class="logo-mark">
+                    S
+                </span>
+
+                <span class="logo-text">
+                    STORE
+                </span>
+
+            </a>
+
+
+            <nav
+                class="main-nav"
+                id="mainNav"
+            >
+
+                <a
+                    href="index.html"
+                    class="nav-link"
+                >
+                    Home
+                </a>
+
+                <a
+                    href="shop.html"
+                    class="nav-link"
+                >
+                    Shop
+                </a>
+
+                <a
+                    href="shop.html"
+                    class="nav-link"
+                >
+                    Categories
+                </a>
+
+                <a
+                    href="shop.html"
+                    class="nav-link"
+                >
+                    Deals
+                </a>
+
+            </nav>
+
+
+            <div class="header-actions">
+
+                <a
+                    href="account.html"
+                    class="icon-btn active"
+                    aria-label="Account"
+                >
+                    <i class="bx bx-user"></i>
+                </a>
+
+
+                <a
+                    href="cart.html"
+                    class="cart-btn"
+                    aria-label="Shopping cart"
+                >
+
+                    <i class="bx bx-shopping-bag"></i>
+
+                    <span
+                        class="cart-count"
+                        id="headerCartCount"
+                    >
+                        0
+                    </span>
+
+                </a>
+
+
+                <button
+                    class="menu-btn"
+                    id="menuBtn"
+                    type="button"
+                    aria-label="Open menu"
+                >
+
+                    <i class="bx bx-menu"></i>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         ORDERS
+    ========================== -->
+
+    <main>
+
+        <section class="orders-page">
+
+            <div class="container">
+
+                <div class="orders-heading">
+
+                    <span class="eyebrow">
+                        ACCOUNT
+                    </span>
+
+                    <h1>
+                        My Orders
+                    </h1>
+
+                    <p>
+                        View and manage your previous purchases.
+                    </p>
+
+                </div>
+
+
+                <div
+                    class="orders-list"
+                    id="ordersList"
+                >
+
+                    <!-- Rendered by JavaScript -->
+
+                </div>
+
+
+                <!-- =====================
+                     EMPTY ORDERS
+                ====================== -->
+
+                <div
+                    class="orders-empty"
+                    id="ordersEmpty"
+                    hidden
+                >
+
+                    <div class="orders-empty-icon">
+
+                        <i class="bx bx-package"></i>
+
+                    </div>
+
+
+                    <h2>
+                        No orders yet
+                    </h2>
+
+
+                    <p>
+                        Once you complete a purchase,
+                        your orders will appear here.
+                    </p>
+
+
+                    <a
+                        href="shop.html"
+                        class="btn btn-primary"
+                    >
+
+                        Start Shopping
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer class="site-footer">
+
+        <div class="container">
+
+            <div class="footer-bottom">
+
+                <p>
+
+                    &copy;
+
+                    <span id="currentYear"></span>
+
+                    Store. All rights reserved.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <script
+        type="module"
+        src="js/orders.js"
+    ></script>
+
+</body>
+
+</html>

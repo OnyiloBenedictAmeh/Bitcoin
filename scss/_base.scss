@@ -1,0 +1,64 @@
+@use "variables" as *;
+
+body {
+    background: $color-background;
+    color: $color-text;
+    font-family: $font-main;
+    line-height: 1.5;
+}
+
+.container {
+    width: min(
+        calc(100% - 40px),
+        $container-width
+    );
+
+    margin-inline: auto;
+}
+
+.section {
+    padding: 100px 0;
+}
+
+.eyebrow {
+    display: inline-block;
+
+    margin-bottom: 12px;
+
+    color: $color-accent;
+
+    font-size: 0.75rem;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+
+    gap: 30px;
+
+    margin-bottom: 45px;
+
+    h2 {
+        font-size: clamp(2rem, 4vw, 3rem);
+        line-height: 1.1;
+    }
+}
+
+.text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    font-weight: 700;
+
+    transition: $transition;
+
+    &:hover {
+        gap: 9px;
+    }
+}

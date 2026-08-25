@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="description" content="Secure checkout" />
+
+    <title>Checkout | Store</title>
+
+    <link rel="stylesheet" href="css/main.css" />
+
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="index.html" class="logo">
+          <span class="logo-mark"> S </span>
+
+          <span class="logo-text"> STORE </span>
+        </a>
+
+        <div class="checkout-header-title">
+          <i class="bx bx-lock-alt"></i>
+
+          Secure Checkout
+        </div>
+
+        <a href="cart.html" class="checkout-back">
+          <i class="bx bx-left-arrow-alt"></i>
+
+          Back to Cart
+        </a>
+      </div>
+    </header>
+
+    <!-- =========================
+         CHECKOUT
+    ========================== -->
+
+    <main>
+      <section class="checkout-page">
+        <div class="container">
+          <div class="checkout-layout" id="checkoutLayout">
+            <!-- =====================
+                         CHECKOUT FORM
+                    ====================== -->
+
+            <div class="checkout-main">
+              <div class="checkout-section">
+                <div class="checkout-section-heading">
+                  <span class="checkout-number"> 01 </span>
+
+                  <div>
+                    <h2>Contact information</h2>
+
+                    <p>Where should we send your order updates?</p>
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group full">
+                    <label for="email"> Email address </label>
+
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      placeholder="you@example.com"
+                      autocomplete="email"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- =====================
+                             SHIPPING
+                        ====================== -->
+
+              <div class="checkout-section">
+                <div class="checkout-section-heading">
+                  <span class="checkout-number"> 02 </span>
+
+                  <div>
+                    <h2>Delivery information</h2>
+
+                    <p>Where should we deliver your order?</p>
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="firstName"> First name </label>
+
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      autocomplete="given-name"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="lastName"> Last name </label>
+
+                    <input
+                      type="text"
+                      id="lastName"
+                      name="lastName"
+                      autocomplete="family-name"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group full">
+                    <label for="address"> Address </label>
+
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      placeholder="Street address"
+                      autocomplete="street-address"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="city"> City </label>
+
+                    <input
+                      type="text"
+                      id="city"
+                      name="city"
+                      autocomplete="address-level2"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="state"> State / Region </label>
+
+                    <input
+                      type="text"
+                      id="state"
+                      name="state"
+                      autocomplete="address-level1"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="postalCode"> Postal code </label>
+
+                    <input
+                      type="text"
+                      id="postalCode"
+                      name="postalCode"
+                      autocomplete="postal-code"
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="country"> Country </label>
+
+                    <select
+                      id="country"
+                      name="country"
+                      autocomplete="country-name"
+                      required
+                    >
+                      <option value="">Select country</option>
+
+                      <option value="Nigeria">Nigeria</option>
+
+                      <option value="Ghana">Ghana</option>
+
+                      <option value="Kenya">Kenya</option>
+
+                      <option value="South Africa">South Africa</option>
+
+                      <option value="United States">United States</option>
+
+                      <option value="United Kingdom">United Kingdom</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group full">
+                    <label for="phone"> Phone number </label>
+
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      autocomplete="tel"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- =====================
+                             PAYMENT
+                        ====================== -->
+
+              <div class="checkout-section">
+                <div class="checkout-section-heading">
+                  <span class="checkout-number"> 03 </span>
+
+                  <div>
+                    <h2>Payment</h2>
+
+                    <p>Choose how you want to pay.</p>
+                  </div>
+                </div>
+
+                <div class="payment-methods">
+                  <!-- BITCOIN -->
+
+                  <label class="payment-method active">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="bitcoin"
+                      checked
+                    />
+
+                    <span class="payment-method-icon"> ₿ </span>
+
+                    <span class="payment-method-info">
+                      <strong> Bitcoin </strong>
+
+                      <small> Pay securely with BTC </small>
+                    </span>
+
+                    <i class="bx bx-check-circle"></i>
+                  </label>
+
+                  <!-- CARD -->
+
+                  <label class="payment-method">
+                    <input type="radio" name="paymentMethod" value="card" />
+
+                    <span class="payment-method-icon">
+                      <i class="bx bx-credit-card"></i>
+                    </span>
+
+                    <span class="payment-method-info">
+                      <strong> Credit / Debit Card </strong>
+
+                      <small> Visa, Mastercard and more </small>
+                    </span>
+
+                    <i class="bx bx-check-circle"></i>
+                  </label>
+
+                  <!-- PAYMENT SECURITY -->
+
+                  <div class="payment-security">
+                    <i class="bx bx-shield-quarter"></i>
+
+                    <div>
+                      <strong> Secure payment </strong>
+
+                      <p>
+                        Your payment information is handled securely by our
+                        payment provider.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- =====================
+                             NOTES
+                        ====================== -->
+
+              <div class="checkout-section">
+                <div class="form-group">
+                  <label for="orderNotes">
+                    Order notes
+                    <span> (optional) </span>
+                  </label>
+
+                  <textarea
+                    id="orderNotes"
+                    name="orderNotes"
+                    rows="4"
+                    placeholder="Anything you'd like us to know?"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div class="checkout-error" id="checkoutError" hidden>
+                <i class="bx bx-error-circle"></i>
+
+                <span></span>
+              </div>
+
+              <button
+                type="button"
+                class="btn btn-primary place-order-btn"
+                id="placeOrder"
+              >
+                <i class="bx bx-lock-alt"></i>
+
+                Continue to Bitcoin Payment
+              </button>
+            </div>
+
+            <!-- =====================
+                         ORDER SUMMARY
+                    ====================== -->
+
+            <aside class="checkout-summary">
+              <h2>Your Order</h2>
+
+              <div class="checkout-items" id="checkoutItems">
+                <!-- Rendered by JS -->
+              </div>
+
+              <div class="checkout-summary-lines">
+                <div class="summary-row">
+                  <span> Subtotal </span>
+
+                  <strong id="checkoutSubtotal"> $0.00 </strong>
+                </div>
+
+                <div class="summary-row">
+                  <span> Shipping </span>
+
+                  <strong id="checkoutShipping"> Calculated </strong>
+                </div>
+
+                <div class="summary-divider"></div>
+
+                <div class="summary-total">
+                  <span> Total </span>
+
+                  <strong id="checkoutTotal"> $0.00 </strong>
+                </div>
+              </div>
+
+              <div class="checkout-trust">
+                <div>
+                  <i class="bx bx-lock-alt"></i>
+
+                  Secure checkout
+                </div>
+
+                <div>
+                  <i class="bx bx-shield-quarter"></i>
+
+                  Protected payment
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          <!-- =====================
+                     EMPTY CART
+                ====================== -->
+
+          <div class="checkout-empty" id="checkoutEmpty" hidden>
+            <i class="bx bx-shopping-bag"></i>
+
+            <h1>Your cart is empty</h1>
+
+            <p>Add something to your cart before checking out.</p>
+
+            <a href="shop.html" class="btn btn-primary"> Start Shopping </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="js/checkout.js"></script>
+  </body>
+</html>

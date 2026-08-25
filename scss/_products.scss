@@ -1,0 +1,66 @@
+@use "variables" as *;
+
+.product-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 22px;
+}
+
+.product-card {
+    overflow: hidden;
+
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+
+    background: #fff;
+
+    transition: $transition;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: $shadow-sm;
+    }
+}
+
+.product-image {
+    aspect-ratio: 1;
+
+    display: grid;
+    place-items: center;
+
+    background: $color-surface;
+
+    color: $color-text-muted;
+
+    font-size: 4rem;
+}
+
+.product-info {
+    padding: 18px;
+}
+
+.product-category {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: $color-text-muted;
+
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.product-name {
+    margin-bottom: 10px;
+
+    font-size: 1rem;
+}
+
+.product-price {
+    font-size: 1.05rem;
+    font-weight: 800;
+}
