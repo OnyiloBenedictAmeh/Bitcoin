@@ -107,61 +107,61 @@ const ShopApp = (() => {
     // LOAD PRODUCTS
     // ========================================
 
-    function loadProducts() {
+    async function loadProducts() {
 
-        let products = [];
+    try {
 
-        try {
+        const response = await fetch("/api/products");
 
-            products = JSON.parse(
-                localStorage.getItem(
-                    PRODUCTS_KEY
-                ) || "[]"
+        if (!response.ok) {
+            throw new Error(
+                `Product API returned ${response.status}`
             );
-
-        } catch (error) {
-
-            console.error(
-                "Unable to load products:",
-                error
-            );
-
-            products = [];
-
         }
 
+        const data = await response.json();
 
-        if (!Array.isArray(products)) {
-
-            products = [];
-
+        if (!data.success || !Array.isArray(data.products)) {
+            throw new Error(
+                "Invalid product API response"
+            );
         }
 
+        state.products = data.products.filter(product => {
 
-        /*
-         * Only show products that are not
-         * explicitly marked as inactive.
-         *
-         * This also means older products
-         * without a status will still show.
-         */
+            return (
+                product &&
+                product.status === "active"
+            );
 
-        state.products =
-            products.filter(product => {
+        });
 
-                return (
-                    product &&
-                    product.status !== "inactive"
-                );
+        state.filteredProducts = [
+            ...state.products
+        ];
 
-            });
+        renderCategoryFilters();
 
+        applyFilters();
 
-        state.filteredProducts =
-            [...state.products];
+    } catch (error) {
+
+        console.error(
+            "Unable to load products from API:",
+            error
+        );
+
+        state.products = [];
+
+        state.filteredProducts = [];
+
+        renderCategoryFilters();
+
+        renderProducts();
 
     }
 
+}
 
     // ========================================
     // NORMALIZE PRICE
@@ -264,13 +264,24 @@ const ShopApp = (() => {
 
 
         if (
-            Array.isArray(product.images) &&
-            product.images.length
-        ) {
+    Array.isArray(product.images) &&
+    product.images.length
+) {
 
-            return product.images[0];
+    const firstImage = product.images[0];
 
-        }
+    if (typeof firstImage === "string") {
+        return firstImage;
+    }
+
+    if (
+        firstImage &&
+        typeof firstImage.url === "string"
+    ) {
+        return firstImage.url;
+    }
+
+}
 
 
         return "";
@@ -1116,46 +1127,22 @@ const ShopApp = (() => {
     // STORAGE CHANGES
     // ========================================
 
-    function initStorageListener() {
+   function initStorageListener() {
 
-        /*
-         * This is useful because the admin and
-         * shop may be open in different browser
-         * tabs.
-         *
-         * When the admin saves a product, the
-         * shop can automatically reload it.
-         */
+    window.addEventListener(
+        "storage",
+        event => {
 
-        window.addEventListener(
-            "storage",
-            event => {
+            if (event.key === "cart") {
 
-                if (
-                    event.key === PRODUCTS_KEY
-                ) {
-
-                    loadProducts();
-
-                    renderCategoryFilters();
-
-                    applyFilters();
-
-                }
-
-
-                if (
-                    event.key === "cart"
-                ) {
-
-                    updateCartCount();
-
-                }
+                updateCartCount();
 
             }
-        );
 
-    }
+        }
+    );
+
+}
 
 
     // ========================================
@@ -1194,31 +1181,27 @@ const ShopApp = (() => {
     // INIT
     // ========================================
 
-    function init() {
+    async function init() {
 
-        loadProducts();
+    await loadProducts();
 
-        renderCategoryFilters();
+    initSearchToggle();
 
-        renderProducts();
+    initPriceFilters();
 
-        initSearchToggle();
+    initSort();
 
-        initPriceFilters();
+    initEvents();
 
-        initSort();
+    initNavigation();
 
-        initEvents();
+    initStorageListener();
 
-        initNavigation();
+    updateCartCount();
 
-        initStorageListener();
+    setCurrentYear();
 
-        updateCartCount();
-
-        setCurrentYear();
-
-    }
+}
 
 
     return {
