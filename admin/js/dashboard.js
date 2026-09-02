@@ -1,6 +1,3 @@
-console.log("DASHBOARD JS LOADED");
-
-
 /*
 ========================================
 AUTH ELEMENTS
@@ -40,9 +37,10 @@ PRODUCT STATE
 */
 
 let adminProducts = [];
-
 let editingProductId = null;
 
+let adminCategories = [];
+let editingCategoryId = null;
 
 /*
 ========================================
@@ -179,13 +177,13 @@ function initializeNavigation() {
                 }
 
 
-                if (
-                    section === "products"
-                ) {
+                if (section === "products") {
+    loadAdminProducts();
+}
 
-                    loadAdminProducts();
-
-                }
+if (section === "categories") {
+    loadAdminCategories();
+}
 
             }
         );
@@ -645,7 +643,40 @@ function openAddProduct() {
 
 }
 
+document
+    .getElementById("addCategoryButton")
+    ?.addEventListener(
+        "click",
+        openAddCategory
+    );
 
+document
+    .getElementById("closeCategoryModal")
+    ?.addEventListener(
+        "click",
+        closeCategoryModal
+    );
+
+document
+    .getElementById("cancelCategoryButton")
+    ?.addEventListener(
+        "click",
+        closeCategoryModal
+    );
+
+document
+    .getElementById("categoryForm")
+    ?.addEventListener(
+        "submit",
+        saveCategory
+    );
+
+document
+    .getElementById("adminCategorySearch")
+    ?.addEventListener(
+        "input",
+        renderAdminCategories
+    );
 /*
 ========================================
 OPEN EDIT PRODUCT
@@ -1280,7 +1311,464 @@ async function logoutAdmin() {
 
 }
 
+// ========================================
+// CATEGORIES
+// ========================================
 
+async function loadAdminCategories() {
+
+    try {
+
+        const response = await fetch(
+            "/api/admin/categories",
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message || "Unable to load categories"
+            );
+        }
+
+        adminCategories = data.categories || [];
+
+        renderAdminCategories();
+
+    } catch (error) {
+
+        console.error(
+            "LOAD CATEGORIES ERROR:",
+            error
+        );
+
+        showCategoryMessage(
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+function renderAdminCategories() {
+
+    const table =
+        document.getElementById(
+            "adminCategoriesTable"
+        );
+
+    const empty =
+        document.getElementById(
+            "categoriesEmpty"
+        );
+
+    const searchInput =
+        document.getElementById(
+            "adminCategorySearch"
+        );
+
+    if (!table) return;
+
+    const search =
+        searchInput?.value
+            ?.trim()
+            .toLowerCase() || "";
+
+    const filtered =
+        adminCategories.filter(category => {
+
+            return (
+                category.name
+                    ?.toLowerCase()
+                    .includes(search) ||
+
+                category.slug
+                    ?.toLowerCase()
+                    .includes(search) ||
+
+                category.description
+                    ?.toLowerCase()
+                    .includes(search)
+            );
+
+        });
+
+    table.innerHTML = "";
+
+    if (filtered.length === 0) {
+
+        empty.hidden = false;
+
+        return;
+    }
+
+    empty.hidden = true;
+
+    table.innerHTML = filtered
+        .map(category => {
+
+            const created =
+                category.created_at
+                    ? new Date(
+                        category.created_at
+                    ).toLocaleDateString()
+                    : "—";
+
+            return `
+                <tr>
+
+                    <td>
+                        <strong>
+                            ${escapeHtml(category.name)}
+                        </strong>
+                    </td>
+
+                    <td>
+                        <code>
+                            ${escapeHtml(category.slug)}
+                        </code>
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            category.description || "—"
+                        )}
+                    </td>
+
+                    <td>
+                        ${category.product_count ?? 0}
+                    </td>
+
+                    <td>
+                        ${created}
+                    </td>
+
+                    <td>
+
+                        <div class="table-actions">
+
+                            <button
+                                type="button"
+                                class="btn btn-small"
+                                onclick="openEditCategory('${category.id}')"
+                            >
+                                Edit
+                            </button>
+
+                            <button
+                                type="button"
+                                class="btn btn-small btn-danger"
+                                onclick="deleteCategory('${category.id}')"
+                            >
+                                Delete
+                            </button>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+            `;
+
+        })
+        .join("");
+}
+
+
+function openAddCategory() {
+
+    editingCategoryId = null;
+
+    const form =
+        document.getElementById(
+            "categoryForm"
+        );
+
+    form.reset();
+
+    document.getElementById(
+        "categoryId"
+    ).value = "";
+
+    document.getElementById(
+        "categoryModalTitle"
+    ).textContent = "Add Category";
+
+    clearCategoryMessage();
+
+    document.getElementById(
+        "categoryModal"
+    ).hidden = false;
+
+    document.getElementById(
+        "categoryName"
+    ).focus();
+}
+
+
+function openEditCategory(id) {
+
+    const category =
+        adminCategories.find(
+            item => item.id === id
+        );
+
+    if (!category) return;
+
+    editingCategoryId = id;
+
+    document.getElementById(
+        "categoryId"
+    ).value = category.id;
+
+    document.getElementById(
+        "categoryName"
+    ).value = category.name || "";
+
+    document.getElementById(
+        "categoryDescription"
+    ).value =
+        category.description || "";
+
+    document.getElementById(
+        "categoryModalTitle"
+    ).textContent = "Edit Category";
+
+    clearCategoryMessage();
+
+    document.getElementById(
+        "categoryModal"
+    ).hidden = false;
+}
+
+
+function closeCategoryModal() {
+
+    document.getElementById(
+        "categoryModal"
+    ).hidden = true;
+
+    editingCategoryId = null;
+}
+
+
+async function saveCategory(event) {
+
+    event.preventDefault();
+
+    const name =
+        document.getElementById(
+            "categoryName"
+        ).value.trim();
+
+    const description =
+        document.getElementById(
+            "categoryDescription"
+        ).value.trim();
+
+    if (!name) {
+
+        showCategoryMessage(
+            "Category name is required.",
+            "error"
+        );
+
+        return;
+    }
+
+    const button =
+        document.getElementById(
+            "saveCategoryButton"
+        );
+
+    button.disabled = true;
+
+    button.textContent =
+        "Saving...";
+
+    try {
+
+        const isEditing =
+            Boolean(editingCategoryId);
+
+        const url =
+            isEditing
+                ? `/api/admin/categories?id=${encodeURIComponent(editingCategoryId)}`
+                : "/api/admin/categories";
+
+        const response =
+            await fetch(
+                url,
+                {
+                    method: isEditing
+                        ? "PATCH"
+                        : "POST",
+
+                    credentials: "include",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        name,
+                        description
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.success) {
+
+            throw new Error(
+                data.message ||
+                "Unable to save category"
+            );
+        }
+
+        showCategoryMessage(
+            isEditing
+                ? "Category updated successfully."
+                : "Category created successfully.",
+            "success"
+        );
+
+        await loadAdminCategories();
+
+        setTimeout(() => {
+            closeCategoryModal();
+        }, 500);
+
+    } catch (error) {
+
+        console.error(
+            "SAVE CATEGORY ERROR:",
+            error
+        );
+
+        showCategoryMessage(
+            error.message,
+            "error"
+        );
+
+    } finally {
+
+        button.disabled = false;
+
+        button.textContent =
+            "Save Category";
+    }
+}
+
+
+async function deleteCategory(id) {
+
+    const category =
+        adminCategories.find(
+            item => item.id === id
+        );
+
+    if (!category) return;
+
+    const confirmed =
+        confirm(
+            `Delete "${category.name}"?`
+        );
+
+    if (!confirmed) return;
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/admin/categories?id=${encodeURIComponent(id)}`,
+                {
+                    method: "DELETE",
+                    credentials: "include"
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.success) {
+
+            throw new Error(
+                data.message ||
+                "Unable to delete category"
+            );
+        }
+
+        await loadAdminCategories();
+
+        showCategoryMessage(
+            "Category deleted successfully.",
+            "success"
+        );
+
+    } catch (error) {
+
+        console.error(
+            "DELETE CATEGORY ERROR:",
+            error
+        );
+
+        showCategoryMessage(
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+function showCategoryMessage(
+    message,
+    type = "info"
+) {
+
+    const element =
+        document.getElementById(
+            "categoriesMessage"
+        );
+
+    if (!element) return;
+
+    element.textContent = message;
+
+    element.className =
+        `admin-message ${type}`;
+}
+
+
+function clearCategoryMessage() {
+
+    const elements = [
+        document.getElementById(
+            "categoriesMessage"
+        ),
+
+        document.getElementById(
+            "categoryFormMessage"
+        )
+    ];
+
+    elements.forEach(element => {
+
+        if (!element) return;
+
+        element.textContent = "";
+
+        element.className =
+            "admin-message";
+    });
+}
 /*
 ========================================
 START
