@@ -643,40 +643,6 @@ function openAddProduct() {
 
 }
 
-document
-    .getElementById("addCategoryButton")
-    ?.addEventListener(
-        "click",
-        openAddCategory
-    );
-
-document
-    .getElementById("closeCategoryModal")
-    ?.addEventListener(
-        "click",
-        closeCategoryModal
-    );
-
-document
-    .getElementById("cancelCategoryButton")
-    ?.addEventListener(
-        "click",
-        closeCategoryModal
-    );
-
-document
-    .getElementById("categoryForm")
-    ?.addEventListener(
-        "submit",
-        saveCategory
-    );
-
-document
-    .getElementById("adminCategorySearch")
-    ?.addEventListener(
-        "input",
-        renderAdminCategories
-    );
 /*
 ========================================
 OPEN EDIT PRODUCT
@@ -1187,7 +1153,62 @@ function escapeHtml(value) {
 
 }
 
+/*
+========================================
+CATEGORY EVENTS
+========================================
+*/
 
+function initializeCategoryManagement() {
+
+    document
+        .getElementById("addCategoryButton")
+        ?.addEventListener(
+            "click",
+            openAddCategory
+        );
+
+    document
+        .getElementById("closeCategoryModal")
+        ?.addEventListener(
+            "click",
+            closeCategoryModal
+        );
+
+    document
+        .getElementById("cancelCategoryButton")
+        ?.addEventListener(
+            "click",
+            closeCategoryModal
+        );
+
+    document
+        .getElementById("categoryForm")
+        ?.addEventListener(
+            "submit",
+            saveCategory
+        );
+
+    document
+        .getElementById("adminCategorySearch")
+        ?.addEventListener(
+            "input",
+            renderAdminCategories
+        );
+
+    document
+        .getElementById("categoryModal")
+        ?.addEventListener(
+            "click",
+            event => {
+
+                if (event.target.id === "categoryModal") {
+                    closeCategoryModal();
+                }
+
+            }
+        );
+}
 /*
 ========================================
 INITIALIZE DASHBOARD
@@ -1200,83 +1221,58 @@ function initializeDashboard() {
 
     initializeProductFilters();
 
+    initializeCategoryManagement();
 
     document
-        .getElementById(
-            "addProductButton"
-        )
+        .getElementById("addProductButton")
         ?.addEventListener(
             "click",
             openAddProduct
         );
 
-
     document
-        .getElementById(
-            "closeProductModal"
-        )
+        .getElementById("closeProductModal")
         ?.addEventListener(
             "click",
             closeProductModal
         );
 
-
     document
-        .getElementById(
-            "cancelProductButton"
-        )
+        .getElementById("cancelProductButton")
         ?.addEventListener(
             "click",
             closeProductModal
         );
 
-
     document
-        .getElementById(
-            "productForm"
-        )
+        .getElementById("productForm")
         ?.addEventListener(
             "submit",
             saveProduct
         );
 
-
     document
-        .getElementById(
-            "productModal"
-        )
+        .getElementById("productModal")
         ?.addEventListener(
             "click",
             event => {
 
-                if (
-                    event.target.id ===
-                    "productModal"
-                ) {
-
+                if (event.target.id === "productModal") {
                     closeProductModal();
-
                 }
 
             }
         );
-
 
     logoutButton?.addEventListener(
         "click",
         logoutAdmin
     );
 
-
-    /*
-    Load products immediately
-    so the dashboard count is real.
-    */
-
     loadAdminProducts();
 
+    loadAdminCategories();
 }
-
 
 /*
 ========================================
@@ -1371,142 +1367,244 @@ function renderAdminCategories() {
             "adminCategorySearch"
         );
 
-    if (!table) return;
+    if (!table) {
+        return;
+    }
+
 
     const search =
         searchInput?.value
             ?.trim()
             .toLowerCase() || "";
 
+
     const filtered =
         adminCategories.filter(category => {
 
             return (
-                category.name
-                    ?.toLowerCase()
-                    .includes(search) ||
+                String(category.name || "")
+                    .toLowerCase()
+                    .includes(search)
 
-                category.slug
-                    ?.toLowerCase()
-                    .includes(search) ||
+                ||
 
-                category.description
-                    ?.toLowerCase()
+                String(category.slug || "")
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                String(category.description || "")
+                    .toLowerCase()
                     .includes(search)
             );
 
         });
 
+
     table.innerHTML = "";
 
-    if (filtered.length === 0) {
 
-        empty.hidden = false;
+    if (!filtered.length) {
+
+        if (empty) {
+            empty.style.display = "block";
+        }
 
         return;
     }
 
-    empty.hidden = true;
 
-    table.innerHTML = filtered
-        .map(category => {
+    if (empty) {
+        empty.style.display = "none";
+    }
 
-            const created =
-                category.created_at
-                    ? new Date(
-                        category.created_at
-                    ).toLocaleDateString()
-                    : "—";
 
-            return `
-                <tr>
+    table.innerHTML =
+        filtered
+            .map(category => {
 
-                    <td>
-                        <strong>
-                            ${escapeHtml(category.name)}
-                        </strong>
-                    </td>
+                const created =
+                    category.created_at
+                        ? new Date(
+                            category.created_at
+                        ).toLocaleDateString()
+                        : "—";
 
-                    <td>
-                        <code>
-                            ${escapeHtml(category.slug)}
-                        </code>
-                    </td>
 
-                    <td>
-                        ${escapeHtml(
-                            category.description || "—"
-                        )}
-                    </td>
+                return `
+                    <tr>
 
-                    <td>
-                        ${category.product_count ?? 0}
-                    </td>
+                        <td>
+                            <div class="product-name">
+                                ${escapeHtml(
+                                    category.name
+                                )}
+                            </div>
+                        </td>
 
-                    <td>
-                        ${created}
-                    </td>
 
-                    <td>
+                        <td>
+                            <code>
+                                ${escapeHtml(
+                                    category.slug
+                                )}
+                            </code>
+                        </td>
 
-                        <div class="table-actions">
 
-                            <button
-                                type="button"
-                                class="btn btn-small"
-                                onclick="openEditCategory('${category.id}')"
-                            >
-                                Edit
-                            </button>
+                        <td>
+                            <div class="product-description">
+                                ${escapeHtml(
+                                    category.description || "—"
+                                )}
+                            </div>
+                        </td>
 
-                            <button
-                                type="button"
-                                class="btn btn-small btn-danger"
-                                onclick="deleteCategory('${category.id}')"
-                            >
-                                Delete
-                            </button>
 
-                        </div>
+                        <td>
+                            ${Number(
+                                category.product_count || 0
+                            )}
+                        </td>
 
-                    </td>
 
-                </tr>
-            `;
+                        <td>
+                            ${created}
+                        </td>
 
-        })
-        .join("");
+
+                        <td>
+
+                            <div class="product-actions">
+
+                                <button
+                                    class="product-action"
+                                    type="button"
+                                    title="Edit"
+                                    data-edit-category="${category.id}"
+                                >
+                                    <i class="bx bx-edit"></i>
+                                </button>
+
+
+                                <button
+                                    class="product-action"
+                                    type="button"
+                                    title="Delete"
+                                    data-delete-category="${category.id}"
+                                >
+                                    <i class="bx bx-trash"></i>
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+                `;
+
+            })
+            .join("");
+
+
+    /*
+    ========================================
+    EDIT CATEGORY BUTTONS
+    ========================================
+    */
+
+    table
+        .querySelectorAll(
+            "[data-edit-category]"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    openEditCategory(
+                        button.dataset.editCategory
+                    );
+
+                }
+            );
+
+        });
+
+
+    /*
+    ========================================
+    DELETE CATEGORY BUTTONS
+    ========================================
+    */
+
+    table
+        .querySelectorAll(
+            "[data-delete-category]"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    deleteCategory(
+                        button.dataset.deleteCategory
+                    );
+
+                }
+            );
+
+        });
+
 }
 
 
 function openAddCategory() {
 
-    editingCategoryId = null;
+    editingCategoryId =
+        null;
+
 
     const form =
         document.getElementById(
             "categoryForm"
         );
 
+
+    if (!form) {
+        return;
+    }
+
+
     form.reset();
+
 
     document.getElementById(
         "categoryId"
     ).value = "";
 
+
     document.getElementById(
         "categoryModalTitle"
-    ).textContent = "Add Category";
+    ).textContent =
+        "Add Category";
+
 
     clearCategoryMessage();
+
 
     document.getElementById(
         "categoryModal"
     ).hidden = false;
 
+
     document.getElementById(
         "categoryName"
     ).focus();
+
 }
 
 
@@ -1560,91 +1658,138 @@ async function saveCategory(event) {
 
     event.preventDefault();
 
+
     const name =
         document.getElementById(
             "categoryName"
         ).value.trim();
+
 
     const description =
         document.getElementById(
             "categoryDescription"
         ).value.trim();
 
-    if (!name) {
-
-        showCategoryMessage(
-            "Category name is required.",
-            "error"
-        );
-
-        return;
-    }
 
     const button =
         document.getElementById(
             "saveCategoryButton"
         );
 
-    button.disabled = true;
+
+    const message =
+        document.getElementById(
+            "categoryFormMessage"
+        );
+
+
+    if (!name) {
+
+        message.textContent =
+            "Category name is required.";
+
+        message.className =
+            "form-message error";
+
+        return;
+    }
+
+
+    const isEditing =
+        Boolean(editingCategoryId);
+
+
+    button.disabled =
+        true;
 
     button.textContent =
-        "Saving...";
+        isEditing
+            ? "Updating..."
+            : "Saving...";
+
+
+    message.textContent =
+        "";
+
+    message.className =
+        "form-message";
+
 
     try {
 
-        const isEditing =
-            Boolean(editingCategoryId);
-
         const url =
             isEditing
-                ? `/api/admin/categories?id=${encodeURIComponent(editingCategoryId)}`
+                ? `/api/admin/categories?id=${encodeURIComponent(
+                    editingCategoryId
+                )}`
                 : "/api/admin/categories";
+
 
         const response =
             await fetch(
                 url,
                 {
-                    method: isEditing
-                        ? "PATCH"
-                        : "POST",
+                    method:
+                        isEditing
+                            ? "PATCH"
+                            : "POST",
 
-                    credentials: "include",
+                    credentials:
+                        "include",
 
                     headers: {
                         "Content-Type":
                             "application/json"
                     },
 
-                    body: JSON.stringify({
-                        name,
-                        description
-                    })
+                    body:
+                        JSON.stringify({
+                            name,
+                            description
+                        })
                 }
             );
+
 
         const data =
             await response.json();
 
-        if (!response.ok || !data.success) {
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
 
             throw new Error(
                 data.message ||
                 "Unable to save category"
             );
+
         }
 
-        showCategoryMessage(
+
+        message.textContent =
             isEditing
                 ? "Category updated successfully."
-                : "Category created successfully.",
-            "success"
-        );
+                : "Category created successfully.";
+
+
+        message.className =
+            "form-message success";
+
 
         await loadAdminCategories();
 
-        setTimeout(() => {
-            closeCategoryModal();
-        }, 500);
+
+        setTimeout(
+            () => {
+
+                closeCategoryModal();
+
+            },
+            700
+        );
+
 
     } catch (error) {
 
@@ -1653,18 +1798,26 @@ async function saveCategory(event) {
             error
         );
 
-        showCategoryMessage(
-            error.message,
-            "error"
-        );
+
+        message.textContent =
+            error.message ||
+            "Unable to save category.";
+
+
+        message.className =
+            "form-message error";
+
 
     } finally {
 
-        button.disabled = false;
+        button.disabled =
+            false;
 
         button.textContent =
             "Save Category";
+
     }
+
 }
 
 
@@ -1738,36 +1891,55 @@ function showCategoryMessage(
             "categoriesMessage"
         );
 
-    if (!element) return;
+    if (!element) {
+        return;
+    }
 
-    element.textContent = message;
+
+    element.textContent =
+        message;
+
 
     element.className =
-        `admin-message ${type}`;
+        `products-message ${type}`;
+
 }
 
 
 function clearCategoryMessage() {
 
-    const elements = [
+    const categoryMessage =
         document.getElementById(
             "categoriesMessage"
-        ),
+        );
 
+    const formMessage =
         document.getElementById(
             "categoryFormMessage"
-        )
-    ];
+        );
 
-    elements.forEach(element => {
 
-        if (!element) return;
+    if (categoryMessage) {
 
-        element.textContent = "";
+        categoryMessage.textContent =
+            "";
 
-        element.className =
-            "admin-message";
-    });
+        categoryMessage.className =
+            "products-message";
+
+    }
+
+
+    if (formMessage) {
+
+        formMessage.textContent =
+            "";
+
+        formMessage.className =
+            "form-message";
+
+    }
+
 }
 /*
 ========================================
