@@ -23,15 +23,34 @@ export default async function handler(req, res) {
                 p.slug,
                 p.description,
                 p.price,
-                p.image_url,
+                p.compare_price,
                 p.stock,
+                p.sku,
+                p.brand,
                 p.status,
                 p.featured,
                 p.created_at,
 
                 c.id AS category_id,
                 c.name AS category,
-                c.slug AS category_slug
+                c.slug AS category_slug,
+
+                COALESCE(
+                    (
+                        SELECT json_agg(
+                            json_build_object(
+                                'id', pi.id,
+                                'url', pi.image_url,
+                                'alt', pi.alt_text,
+                                'sortOrder', pi.sort_order
+                            )
+                            ORDER BY pi.sort_order ASC
+                        )
+                        FROM product_images pi
+                        WHERE pi.product_id = p.id
+                    ),
+                    '[]'::json
+                ) AS images
 
             FROM products p
 
