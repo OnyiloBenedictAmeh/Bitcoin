@@ -1218,60 +1218,32 @@ INITIALIZE DASHBOARD
 function initializeDashboard() {
 
     initializeNavigation();
-
     initializeProductFilters();
-
     initializeCategoryManagement();
 
-    document
-        .getElementById("addProductButton")
-        ?.addEventListener(
-            "click",
-            openAddProduct
-        );
+    populateProductCategories();
 
-    document
-        .getElementById("closeProductModal")
-        ?.addEventListener(
-            "click",
-            closeProductModal
-        );
+    document.getElementById("addProductButton")?.addEventListener("click", openAddProduct);
 
-    document
-        .getElementById("cancelProductButton")
-        ?.addEventListener(
-            "click",
-            closeProductModal
-        );
+    document.getElementById("closeProductModal")?.addEventListener("click", closeProductModal);
 
-    document
-        .getElementById("productForm")
-        ?.addEventListener(
-            "submit",
-            saveProduct
-        );
+    document.getElementById("cancelProductButton")?.addEventListener("click", closeProductModal);
 
-    document
-        .getElementById("productModal")
-        ?.addEventListener(
-            "click",
-            event => {
+    document.getElementById("productForm")?.addEventListener("submit", saveProduct);
 
-                if (event.target.id === "productModal") {
-                    closeProductModal();
-                }
+    document.getElementById("productModal")?.addEventListener("click", event => {
 
-            }
-        );
+        if (event.target.id === "productModal") {
+            closeProductModal();
+        }
 
-    logoutButton?.addEventListener(
-        "click",
-        logoutAdmin
-    );
+    });
+
+    logoutButton?.addEventListener("click", logoutAdmin);
 
     loadAdminProducts();
-
     loadAdminCategories();
+
 }
 
 /*
@@ -1643,7 +1615,83 @@ function openEditCategory(id) {
     ).hidden = false;
 }
 
+async function populateProductCategories() {
 
+    const select =
+        document.getElementById("productCategory");
+
+    if (!select) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/admin/categories",
+                {
+                    method: "GET",
+                    credentials: "include"
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+            throw new Error(
+                data.message ||
+                "Unable to load categories"
+            );
+        }
+
+        const currentValue =
+            select.value;
+
+        select.innerHTML = `
+            <option value="">
+                Select a category
+            </option>
+        `;
+
+        data.categories.forEach(category => {
+
+            const option =
+                document.createElement("option");
+
+            option.value =
+                category.id;
+
+            option.textContent =
+                category.name;
+
+            select.appendChild(option);
+
+        });
+
+        if (currentValue) {
+            select.value = currentValue;
+        }
+
+    } catch (error) {
+
+        console.error(
+            "LOAD PRODUCT CATEGORIES ERROR:",
+            error
+        );
+
+        select.innerHTML = `
+            <option value="">
+                Unable to load categories
+            </option>
+        `;
+
+    }
+
+}
 function closeCategoryModal() {
 
     document.getElementById(
@@ -1779,7 +1827,7 @@ async function saveCategory(event) {
 
 
         await loadAdminCategories();
-
+        await populateProductCategories();
 
         setTimeout(
             () => {
