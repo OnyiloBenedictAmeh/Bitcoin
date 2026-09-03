@@ -651,6 +651,12 @@ OPEN EDIT PRODUCT
 ========================================
 */
 
+/*
+========================================
+OPEN EDIT PRODUCT
+========================================
+*/
+
 function openEditProduct(id) {
 
     const product =
@@ -669,6 +675,49 @@ function openEditProduct(id) {
     editingProductId =
         product.id;
 
+
+    /*
+    ========================================
+    LOAD EXISTING PRODUCT IMAGES
+    ========================================
+    */
+
+    productImages =
+        Array.isArray(product.images)
+            ? product.images
+                .sort(
+                    (a, b) =>
+                        Number(a.sortOrder || 0) -
+                        Number(b.sortOrder || 0)
+                )
+                .map((image, index) => ({
+                    url:
+                        image.url || "",
+
+                    pathname:
+                        image.pathname || "",
+
+                    originalName:
+                        image.alt ||
+                        "Product image",
+
+                    sortOrder:
+                        index,
+
+                    primary:
+                        index === 0
+                }))
+            : [];
+
+
+    renderProductImagePreview();
+
+
+    /*
+    ========================================
+    PRODUCT FORM
+    ========================================
+    */
 
     document.getElementById(
         "productModalTitle"
@@ -742,11 +791,22 @@ function openEditProduct(id) {
 
 
     document.getElementById(
+        "productImageMessage"
+    ).textContent =
+        "";
+
+
+    document.getElementById(
+        "productImageMessage"
+    ).className =
+        "form-message";
+
+
+    document.getElementById(
         "productModal"
     ).hidden = false;
 
 }
-
 
 /*
 ========================================
