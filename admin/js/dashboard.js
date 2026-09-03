@@ -988,7 +988,7 @@ const imageResponse = await fetch(
             productId: savedProductId,
             images: productImages.map((image, index) => ({
                 url: image.url,
-                altText: image.originalname || "",
+                altText: image.originalName || "",
                 sortOrder: index
             }))
         })
