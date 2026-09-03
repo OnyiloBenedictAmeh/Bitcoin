@@ -1,4 +1,5 @@
 import { put } from "@vercel/blob";
+import Busboy from "busboy";
 import { requireAdmin } from "../../_lib/requireAdmin.js";
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8 MB
@@ -65,15 +66,11 @@ export default async function handler(req, res) {
 
         /*
          * ==========================
-         * READ MULTIPART FORM
+         * PARSE MULTIPART REQUEST
          * ==========================
          */
 
-        const formData =
-            await req.formData();
-
-        const file =
-            formData.get("file");
+        const file = await parseMultipart(req);
 
 
         /*
@@ -82,7 +79,7 @@ export default async function handler(req, res) {
          * ==========================
          */
 
-        if (!file || typeof file === "string") {
+        if (!file) {
 
             return res.status(400).json({
                 success: false,
@@ -92,7 +89,7 @@ export default async function handler(req, res) {
         }
 
 
-        if (!ALLOWED_TYPES.has(file.type)) {
+        if (!ALLOWED_TYPES.has(file.mimeType)) {
 
             return res.status(400).json({
                 success: false,
@@ -130,8 +127,11 @@ export default async function handler(req, res) {
          * ==========================
          */
 
+        const originalName =
+            file.originalName || "image.jpg";
+
         const extension =
-            file.name
+            originalName
                 .split(".")
                 .pop()
                 ?.toLowerCase() || "jpg";
@@ -157,11 +157,11 @@ export default async function handler(req, res) {
         const blob =
             await put(
                 pathname,
-                file,
+                file.buffer,
                 {
                     access: "public",
                     addRandomSuffix: true,
-                    contentType: file.type
+                    contentType: file.mimeType
                 }
             );
 
@@ -181,15 +181,20 @@ export default async function handler(req, res) {
 
             image: {
 
-                url: blob.url,
+                url:
+                    blob.url,
 
-                pathname: blob.pathname,
+                pathname:
+                    blob.pathname,
 
-                contentType: file.type,
+                contentType:
+                    file.mimeType,
 
-                size: file.size,
+                size:
+                    file.size,
 
-                originalName: file.name
+                originalName:
+                    originalName
 
             }
 
@@ -209,5 +214,160 @@ export default async function handler(req, res) {
         });
 
     }
+
+}
+
+
+/*
+ * ========================================
+ * MULTIPART FORM PARSER
+ * ========================================
+ */
+
+function parseMultipart(req) {
+
+    return new Promise((resolve, reject) => {
+
+        let uploadedFile = null;
+
+        let fileTooLarge = false;
+
+        const busboy =
+            Busboy({
+                headers: req.headers,
+
+                limits: {
+                    files: 1,
+                    fileSize: MAX_FILE_SIZE
+                }
+            });
+
+
+        busboy.on(
+            "file",
+            (
+                fieldname,
+                file,
+                info
+            ) => {
+
+                const {
+                    filename,
+                    mimeType
+                } = info;
+
+
+                /*
+                 * Only accept the field named "file"
+                 */
+
+                if (fieldname !== "file") {
+
+                    file.resume();
+
+                    return;
+
+                }
+
+
+                const chunks = [];
+
+                let totalSize = 0;
+
+
+                file.on(
+                    "data",
+                    chunk => {
+
+                        totalSize +=
+                            chunk.length;
+
+                        chunks.push(chunk);
+
+                    }
+                );
+
+
+                file.on(
+                    "limit",
+                    () => {
+
+                        fileTooLarge = true;
+
+                    }
+                );
+
+
+                file.on(
+                    "end",
+                    () => {
+
+                        if (fileTooLarge) {
+                            return;
+                        }
+
+
+                        uploadedFile = {
+
+                            buffer:
+                                Buffer.concat(
+                                    chunks
+                                ),
+
+                            originalName:
+                                filename,
+
+                            mimeType:
+                                mimeType,
+
+                            size:
+                                totalSize
+
+                        };
+
+                    }
+                );
+
+            }
+        );
+
+
+        busboy.on(
+            "finish",
+            () => {
+
+                if (fileTooLarge) {
+
+                    reject(
+                        new Error(
+                            "Image is too large. Maximum size is 8 MB."
+                        )
+                    );
+
+                    return;
+
+                }
+
+                resolve(
+                    uploadedFile
+                );
+
+            }
+        );
+
+
+        busboy.on(
+            "error",
+            error => {
+
+                reject(error);
+
+            }
+        );
+
+
+        req.pipe(busboy);
+
+    });
 
 }
