@@ -41,7 +41,7 @@ let editingProductId = null;
 
 let adminCategories = [];
 let editingCategoryId = null;
-
+let productImages = [];
 /*
 ========================================
 AUTHENTICATION
@@ -614,9 +614,11 @@ OPEN ADD PRODUCT
 
 function openAddProduct() {
 
-    editingProductId =
-        null;
+    editingProductId = null;
 
+    productImages = [];
+
+    renderProductImagePreview();
 
     document.getElementById(
         "productModalTitle"
@@ -894,7 +896,10 @@ async function saveProduct(event) {
         if (
             !response.ok ||
             !data.success
-        ) {
+            
+        )
+        
+        {
 
             throw new Error(
                 data.message ||
@@ -902,8 +907,43 @@ async function saveProduct(event) {
             );
 
         }
+const savedProductId =
+    data.product?.id || editingProductId;
 
+if (!savedProductId) {
+    throw new Error(
+        "Product was saved but no product ID was returned"
+    );
+}
+// Save product images
+const imageResponse = await fetch(
+    "/api/admin/products/images",
+    {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            productId: savedProductId,
+            images: productImages.map((image, index) => ({
+                url: image.url,
+                altText: image.originalname || "",
+                sortOrder: index
+            }))
+        })
+    }
+);
 
+const imageData =
+    await imageResponse.json();
+
+if (!imageResponse.ok) {
+    throw new Error(
+        imageData.message ||
+        "Product saved, but images could not be saved"
+    );
+}
         showProductFormMessage(
             editingProductId
                 ? "Product updated successfully."
@@ -1220,7 +1260,7 @@ function initializeDashboard() {
     initializeNavigation();
     initializeProductFilters();
     initializeCategoryManagement();
-
+    initializeProductImageUpload();
     populateProductCategories();
 
     document.getElementById("addProductButton")?.addEventListener("click", openAddProduct);
@@ -1690,6 +1730,400 @@ async function populateProductCategories() {
         `;
 
     }
+
+}
+function initializeProductImageUpload() {
+
+    const dropzone =
+        document.getElementById(
+            "productImageDropzone"
+        );
+
+    const input =
+        document.getElementById(
+            "productImageInput"
+        );
+
+    if (!dropzone || !input) {
+        return;
+    }
+
+    dropzone.addEventListener(
+        "click",
+        () => input.click()
+    );
+
+    input.addEventListener(
+        "change",
+        event => {
+
+            handleProductImages(
+                event.target.files
+            );
+
+            input.value = "";
+
+        }
+    );
+
+    dropzone.addEventListener(
+        "dragover",
+        event => {
+
+            event.preventDefault();
+
+            dropzone.classList.add(
+                "dragover"
+            );
+
+        }
+    );
+
+    dropzone.addEventListener(
+        "dragleave",
+        () => {
+
+            dropzone.classList.remove(
+                "dragover"
+            );
+
+        }
+    );
+
+    dropzone.addEventListener(
+        "drop",
+        event => {
+
+            event.preventDefault();
+
+            dropzone.classList.remove(
+                "dragover"
+            );
+
+            handleProductImages(
+                event.dataTransfer.files
+            );
+
+        }
+    );
+
+}
+async function handleProductImages(files) {
+
+    const fileList = Array.from(files);
+
+    if (
+        productImages.length + fileList.length > 20
+    ) {
+        showProductImageMessage(
+            "You can upload a maximum of 20 images per product.",
+            "error"
+        );
+        return;
+    }
+
+    if (!fileList.length) {
+        return;
+    }
+
+    const message =
+        document.getElementById(
+            "productImageMessage"
+        );
+
+    for (const file of fileList) {
+
+        if (
+            ![
+                "image/jpeg",
+                "image/png",
+                "image/webp",
+                "image/gif"
+            ].includes(file.type)
+        ) {
+
+            message.textContent =
+                `${file.name} is not a supported image.`;
+
+            message.className =
+                "form-message error";
+
+            continue;
+        }
+
+        if (file.size > 8 * 1024 * 1024) {
+
+            message.textContent =
+                `${file.name} is larger than 8 MB.`;
+
+            message.className =
+                "form-message error";
+
+            continue;
+        }
+
+        try {
+
+            message.textContent =
+                `Uploading ${file.name}...`;
+
+            message.className =
+                "form-message";
+
+            const formData =
+                new FormData();
+
+            formData.append(
+                "file",
+                file
+            );
+
+            const response =
+                await fetch(
+                    "/api/admin/images/upload",
+                    {
+                        method: "POST",
+                        credentials: "include",
+                        body: formData
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    "Upload failed"
+                );
+
+            }
+
+            productImages.push({
+
+                url:
+                    data.image.url,
+
+                pathname:
+                    data.image.pathname,
+
+                originalName:
+                    data.image.originalName,
+
+                sortOrder:
+                    productImages.length,
+
+                primary:
+                    productImages.length === 0
+
+            });
+
+            renderProductImagePreview();
+
+            message.textContent =
+                "Image uploaded successfully.";
+
+            message.className =
+                "form-message success";
+
+        } catch (error) {
+
+            console.error(
+                "PRODUCT IMAGE UPLOAD ERROR:",
+                error
+            );
+
+            message.textContent =
+                error.message ||
+                "Unable to upload image.";
+
+            message.className =
+                "form-message error";
+        }
+    }
+}
+function showProductImageMessage(
+    text,
+    type = "info"
+) {
+
+    const element =
+        document.getElementById(
+            "productImageMessage"
+        );
+
+    if (!element) {
+        return;
+    }
+
+    element.textContent =
+        text;
+
+    element.className =
+        `form-message ${type}`;
+}
+function renderProductImagePreview() {
+
+    const container =
+        document.getElementById(
+            "productImagePreview"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML =
+        productImages
+            .map((image, index) => {
+
+                return `
+                    <div
+                        class="product-image-item ${image.primary ? "primary" : ""}"
+                        data-image-index="${index}"
+                    >
+
+                        <img
+                            src="${escapeHtml(image.url)}"
+                            alt="${escapeHtml(
+                                image.originalName || "Product image"
+                            )}"
+                        >
+
+                        ${
+                            image.primary
+                                ? `
+                                    <span class="product-image-primary">
+                                        Primary
+                                    </span>
+                                `
+                                : ""
+                        }
+
+                        <div class="product-image-actions">
+
+                            ${
+                                !image.primary
+                                    ? `
+                                        <button
+                                            type="button"
+                                            class="set-primary"
+                                            data-primary-image="${index}"
+                                        >
+                                            <i class="bx bx-star"></i>
+                                            Primary
+                                        </button>
+                                    `
+                                    : ""
+                            }
+
+                            <button
+                                type="button"
+                                class="remove-image"
+                                data-remove-image="${index}"
+                            >
+                                <i class="bx bx-trash"></i>
+                                Remove
+                            </button>
+
+                        </div>
+
+                    </div>
+                `;
+
+            })
+            .join("");
+
+
+    container
+        .querySelectorAll(
+            "[data-primary-image]"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    setPrimaryProductImage(
+                        Number(
+                            button.dataset.primaryImage
+                        )
+                    );
+
+                }
+            );
+
+        });
+
+
+    container
+        .querySelectorAll(
+            "[data-remove-image]"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    removeProductImage(
+                        Number(
+                            button.dataset.removeImage
+                        )
+                    );
+
+                }
+            );
+
+        });
+
+}
+function setPrimaryProductImage(index) {
+
+    productImages =
+        productImages.map(
+            (image, imageIndex) => ({
+                ...image,
+                primary:
+                    imageIndex === index
+            })
+        );
+
+    renderProductImagePreview();
+
+}
+function removeProductImage(index) {
+
+    productImages.splice(
+        index,
+        1
+    );
+
+    if (
+        productImages.length &&
+        !productImages.some(
+            image => image.primary
+        )
+    ) {
+
+        productImages[0].primary = true;
+
+    }
+
+    productImages =
+        productImages.map(
+            (image, imageIndex) => ({
+                ...image,
+                sortOrder: imageIndex
+            })
+        );
+
+    renderProductImagePreview();
 
 }
 function closeCategoryModal() {
