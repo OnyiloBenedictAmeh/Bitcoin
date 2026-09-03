@@ -1,5 +1,5 @@
 import { neon } from "@neondatabase/serverless";
-import { requireAdmin } from "../../../_lib/requireAdmin.js";
+import { requireAdmin } from "../../_lib/requireAdmin.js";
 
 const sql = neon(process.env.DATABASE_URL);
 
