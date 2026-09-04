@@ -8,7 +8,7 @@ const ProductPage = (() => {
     // PRODUCT DATA
     // ========================================
 
-    const products = [
+    let products = [
 
         {
             id: 1,
@@ -225,9 +225,25 @@ const ProductPage = (() => {
 
         return products.find(
             product =>
-                product.id === id
+                String(product.id) === String(id)
         );
 
+    }
+
+    async function loadProducts() {
+        const response = await fetch("/api/products", { cache: "no-store" });
+        const data = await response.json();
+
+        if (!response.ok || !data.success || !Array.isArray(data.products)) {
+            throw new Error(data.message || "Unable to load product");
+        }
+
+        products = data.products.map(product => ({
+            ...product,
+            images: Array.isArray(product.images)
+                ? product.images.map(image => typeof image === "string" ? image : image.url).filter(Boolean)
+                : []
+        }));
     }
 
 
@@ -574,8 +590,11 @@ const ProductPage = (() => {
             state.quantity = 1;
         }
 
-        if (state.quantity > 99) {
-            state.quantity = 99;
+        const stock = Number(state.product?.stock);
+        const maximum = Number.isFinite(stock) ? stock : 99;
+
+        if (state.quantity > maximum) {
+            state.quantity = Math.max(maximum, 1);
         }
 
 
@@ -648,6 +667,8 @@ const ProductPage = (() => {
 
     function addToCart() {
 
+        if (Number(state.product.stock) <= 0) return;
+
         const cart =
             JSON.parse(
                 localStorage.getItem(
@@ -656,18 +677,19 @@ const ProductPage = (() => {
             );
 
 
-        const existing =
-            cart.find(
-                item =>
-                    item.id ===
-                    state.product.id
-            );
+        const selectedOptions = JSON.stringify(state.selectedOptions);
+        const existing = cart.find(item =>
+            String(item.id) === String(state.product.id) &&
+            JSON.stringify(item.options || {}) === selectedOptions
+        );
 
 
         if (existing) {
 
-            existing.quantity +=
-                state.quantity;
+            existing.quantity = Math.min(
+                Number(state.product.stock),
+                existing.quantity + state.quantity
+            );
 
         } else {
 
@@ -682,8 +704,13 @@ const ProductPage = (() => {
                 price:
                     state.product.price,
 
+                image:
+                    state.product.images?.[0] || "",
+
                 quantity:
                     state.quantity,
+
+                stock: Number(state.product.stock),
 
                 options:
                     {
@@ -967,10 +994,16 @@ const ProductPage = (() => {
     // INITIALIZE
     // ========================================
 
-    function init() {
+    async function init() {
 
-        const id =
-            getProductId();
+        try {
+            await loadProducts();
+        } catch (error) {
+            console.error("PRODUCT LOAD ERROR:", error);
+            products = [];
+        }
+
+        const id = getProductId();
 
 
         state.product =

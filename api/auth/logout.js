@@ -12,7 +12,10 @@ export default function handler(req, res) {
 
     res.setHeader(
         "Set-Cookie",
-        "admin_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0"
+        [
+            "admin_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0",
+            "customer_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0"
+        ]
     );
 
 

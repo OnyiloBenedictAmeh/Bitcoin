@@ -269,8 +269,7 @@ const CartPage = (() => {
                 <div class="cart-item-product">
 
                     <div class="cart-item-image">
-
-                        <i class="bx bx-image"></i>
+                        ${item.image ? `<img src="${item.image}" alt="${item.name}">` : '<i class="bx bx-image"></i>'}
 
                     </div>
 
@@ -406,9 +405,10 @@ const CartPage = (() => {
         }
 
 
-        item.quantity =
-            Number(item.quantity) +
-            amount;
+        item.quantity = Math.min(
+            Number.isFinite(Number(item.stock)) ? Number(item.stock) : Infinity,
+            Number(item.quantity) + amount
+        );
 
 
         // Remove if quantity reaches zero

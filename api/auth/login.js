@@ -1,6 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
+import { rateLimit } from "../_lib/rateLimit.js";
 
 const sql = neon(process.env.DATABASE_URL);
 
@@ -20,6 +21,8 @@ export default async function handler(req, res) {
         });
 
     }
+
+    if (!rateLimit(req, res, { limit: 10, windowMs: 60_000 })) return;
 
 
     try {
@@ -120,20 +123,6 @@ export default async function handler(req, res) {
 
 
         // ========================================
-        // ADMIN CHECK
-        // ========================================
-
-        if (user.role !== "admin") {
-
-            return res.status(403).json({
-                success: false,
-                message: "Administrator access required"
-            });
-
-        }
-
-
-        // ========================================
         // CREATE SESSION TOKEN
         // ========================================
 
@@ -164,7 +153,7 @@ export default async function handler(req, res) {
 
         res.setHeader(
             "Set-Cookie",
-            `admin_session=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=604800`
+            `${user.role === "admin" ? "admin_session" : "customer_session"}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=604800`
         );
 
 

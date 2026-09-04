@@ -723,7 +723,7 @@ const CheckoutPage = (() => {
     // PLACE ORDER
     // ========================================
 
-    function placeOrder() {
+    async function placeOrder() {
 
         if (!validateCheckout()) {
             return;
@@ -739,10 +739,6 @@ const CheckoutPage = (() => {
             return;
 
         }
-
-
-        const subtotal =
-            getSubtotal();
 
 
         const customer = {
@@ -795,48 +791,25 @@ const CheckoutPage = (() => {
         };
 
 
-        const order = {
+        elements.placeOrder.disabled = true;
+        try {
+            const response = await fetch("/api/orders", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ customer, items: cart })
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || "Unable to create order");
 
-            id:
-                `ORD-${Date.now()}`,
-
-            items:
-                cart.map(
-                    item => ({
-                        ...item
-                    })
-                ),
-
-            subtotal,
-
-            shippingCost:
-                0,
-
-            total:
-                subtotal,
-
-            currency:
-                "USD",
-
-            paymentMethod,
-
-            paymentStatus:
-                "Payment pending",
-
-            customer,
-
-            notes:
-                document.getElementById(
-                    "orderNotes"
-                )?.value.trim() || "",
-
-            status:
-                "pending_payment",
-
-            createdAt:
-                new Date().toISOString()
-
-        };
+            const order = {
+                ...data.order,
+                items: cart.map(item => ({ ...item })),
+                customer,
+                paymentMethod: paymentMethod,
+                paymentStatus: data.order.payment_status,
+                createdAt: data.order.created_at
+            };
 
 
         /*
@@ -853,34 +826,27 @@ const CheckoutPage = (() => {
          * Also save to order history.
          */
 
-        saveOrder(
-            order
-        );
-
-
-        console.log(
-            "Order created:",
-            order
-        );
+            localStorage.removeItem("cart");
 
 
         /*
          * Continue to payment.
          */
 
-        if (
-            paymentMethod ===
-            "bitcoin"
-        ) {
+            if (paymentMethod === "bitcoin") {
 
             window.location.href =
                 "bitcoin-payment.html";
 
-        } else {
+            } else {
 
             window.location.href =
                 "card-payment.html";
 
+            }
+        } catch (error) {
+            showError(error.message || "Unable to create order.");
+            elements.placeOrder.disabled = false;
         }
 
     }

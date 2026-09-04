@@ -175,6 +175,8 @@ async function createProduct(req, res) {
     const featured =
         parseBoolean(body.featured);
 
+    const status = body.status === "inactive" ? "inactive" : "active";
+
 
     /*
     ----------------------------------------
@@ -345,7 +347,7 @@ async function createProduct(req, res) {
                     ${sku},
                     ${brand},
                     ${featured},
-                    'active'
+                    ${status}
                 )
 
                 RETURNING
@@ -516,6 +518,10 @@ async function updateProduct(req, res) {
             body.status !== undefined
                 ? String(body.status)
                 : current.status;
+
+        if (!["active", "inactive"].includes(status)) {
+            return sendError(res, 400, "Product status must be active or inactive");
+        }
 
 
         if (!name) {

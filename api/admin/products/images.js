@@ -178,10 +178,14 @@ export default async function handler(req, res) {
         ========================================
         */
 
-        const newUrls =
-            images
-                .map(image => image.url)
-                .filter(Boolean);
+        const newUrls = images.map(image => image.url).filter(Boolean);
+
+        if (new Set(newUrls).size !== newUrls.length) {
+            return res.status(400).json({
+                success: false,
+                message: "The same image cannot be added more than once"
+            });
+        }
 
 
         /*
@@ -252,12 +256,18 @@ export default async function handler(req, res) {
 
         if (removedUrls.length) {
 
-            const deletionResults =
-                await Promise.allSettled(
-                    removedUrls.map(
-                        url => del(url)
-                    )
-                );
+            const stillReferenced = await sql`
+                SELECT image_url FROM product_images WHERE image_url = ANY(${removedUrls})
+            `;
+            const referencedUrls = new Set(
+                stillReferenced.map(image => image.image_url)
+            );
+            const orphanUrls = removedUrls.filter(
+                url => !referencedUrls.has(url)
+            );
+            const deletionResults = await Promise.allSettled(
+                orphanUrls.map(url => del(url))
+            );
 
 
             deletionResults.forEach(
@@ -272,7 +282,7 @@ export default async function handler(req, res) {
                             "BLOB DELETE ERROR:",
                             {
                                 url:
-                                    removedUrls[index],
+                                    orphanUrls[index],
 
                                 error:
                                     result.reason

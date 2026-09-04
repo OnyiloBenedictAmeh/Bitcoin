@@ -452,7 +452,7 @@ const BitcoinPayment = (() => {
     // SIMULATE PAYMENT
     // ========================================
 
-    function simulatePayment() {
+    async function simulatePayment() {
 
         if (!order) {
             return;
@@ -466,35 +466,18 @@ const BitcoinPayment = (() => {
         }
 
 
-        clearInterval(timer);
-
-
-        /*
-         * Mark the current order as paid.
-         */
-
-        order.status =
-            "paid";
-
-        order.paymentStatus =
-            "Paid";
-
-
-        order.payment = {
-
-            method:
-                "bitcoin",
-
-            status:
-                "paid",
-
-            demo:
-                true,
-
-            paidAt:
-                new Date().toISOString()
-
-        };
+        const txid = window.prompt("Paste the 64-character Bitcoin transaction ID to submit it for verification.");
+        if (!txid) return;
+        try {
+            const response = await fetch("/api/orders/payment", {
+                method: "POST", credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orderId: order.id, txid })
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || "Unable to submit payment");
+            clearInterval(timer);
+            order.paymentStatus = "submitted";
 
 
         /*
@@ -502,7 +485,7 @@ const BitcoinPayment = (() => {
          * in order history.
          */
 
-        updateOrderAsPaid();
+        localStorage.setItem("lastOrder", JSON.stringify(order));
 
 
         /*
@@ -547,8 +530,11 @@ const BitcoinPayment = (() => {
         if (elements.orderId) {
 
             elements.orderId.textContent =
-                `Order ${order.id}`;
+                `Payment submitted for order ${order.id}. We will confirm it shortly.`;
 
+        }
+        } catch (error) {
+            window.alert(error.message || "Unable to submit payment");
         }
 
     }

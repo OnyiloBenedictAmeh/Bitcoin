@@ -221,6 +221,25 @@ const AccountPage = (() => {
 
     }
 
+    async function loadRemoteData() {
+        const [profileResponse, ordersResponse] = await Promise.all([
+            fetch("/api/customer/profile", { credentials: "include" }),
+            fetch("/api/orders", { credentials: "include" })
+        ]);
+        if (!profileResponse.ok) throw new Error("Please sign in to view your account");
+        const profile = await profileResponse.json();
+        const remoteOrders = ordersResponse.ok ? await ordersResponse.json() : { orders: [] };
+        const nameParts = String(profile.user.name || "").trim().split(/\s+/);
+        account = {
+            firstName: nameParts.shift() || "Customer", lastName: nameParts.join(" "),
+            email: profile.user.email || "", phone: profile.user.phone || "", address: null
+        };
+        orders = (remoteOrders.orders || []).map(order => ({
+            id: order.id, subtotal: order.subtotal, total: order.total, status: order.status,
+            paymentStatus: order.payment_status, paymentMethod: order.payment_method, createdAt: order.created_at, items: []
+        }));
+    }
+
 
     // ========================================
     // RENDER PROFILE
@@ -791,7 +810,7 @@ const AccountPage = (() => {
     // SAVE PROFILE
     // ========================================
 
-    function saveProfile(event) {
+    async function saveProfile(event) {
 
         event.preventDefault();
 
@@ -812,10 +831,17 @@ const AccountPage = (() => {
             elements.phone.value.trim();
 
 
-        localStorage.setItem(
-            "account",
-            JSON.stringify(account)
-        );
+        try {
+            const response = await fetch("/api/customer/profile", {
+                method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name: `${account.firstName} ${account.lastName}`.trim(), email: account.email, phone: account.phone })
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || "Unable to save profile");
+        } catch (error) {
+            if (elements.message) { elements.message.textContent = error.message; elements.message.hidden = false; }
+            return;
+        }
 
 
         renderProfile();
@@ -912,7 +938,7 @@ const AccountPage = (() => {
     // SIGN OUT
     // ========================================
 
-    function signOut() {
+    async function signOut() {
 
         /*
          * MVP only.
@@ -921,9 +947,8 @@ const AccountPage = (() => {
          * authentication service.
          */
 
-        localStorage.removeItem(
-            "account"
-        );
+        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+        localStorage.removeItem("account");
 
 
         window.location.href =
@@ -1193,9 +1218,17 @@ const AccountPage = (() => {
     // INIT
     // ========================================
 
-    function init() {
+    async function init() {
 
         loadData();
+
+        try {
+            await loadRemoteData();
+        } catch (error) {
+            console.error("ACCOUNT LOAD ERROR:", error);
+            window.location.href = "customer-auth.html";
+            return;
+        }
 
         renderProfile();
 

@@ -42,6 +42,8 @@ let editingProductId = null;
 let adminCategories = [];
 let editingCategoryId = null;
 let productImages = [];
+let unsavedUploadedImageUrls = new Set();
+let adminOrders = [];
 /*
 ========================================
 AUTHENTICATION
@@ -183,6 +185,10 @@ function initializeNavigation() {
 
 if (section === "categories") {
     loadAdminCategories();
+}
+
+if (section === "orders") {
+    loadAdminOrders();
 }
 
             }
@@ -617,6 +623,7 @@ function openAddProduct() {
     editingProductId = null;
 
     productImages = [];
+    unsavedUploadedImageUrls = new Set();
 
     renderProductImagePreview();
 
@@ -634,6 +641,8 @@ function openAddProduct() {
     document.getElementById(
         "productId"
     ).value = "";
+
+    document.getElementById("productEditorStatus").value = "active";
 
 
     clearProductFormMessage();
@@ -674,6 +683,8 @@ function openEditProduct(id) {
 
     editingProductId =
         product.id;
+
+    unsavedUploadedImageUrls = new Set();
 
 
     /*
@@ -786,6 +797,9 @@ function openEditProduct(id) {
             product.featured
         );
 
+    document.getElementById("productEditorStatus").value =
+        product.status === "inactive" ? "inactive" : "active";
+
 
     clearProductFormMessage();
 
@@ -814,7 +828,7 @@ CLOSE PRODUCT MODAL
 ========================================
 */
 
-function closeProductModal() {
+function closeProductModal({ discardUploads = true } = {}) {
 
     document.getElementById(
         "productModal"
@@ -823,6 +837,8 @@ function closeProductModal() {
 
     editingProductId =
         null;
+
+    if (discardUploads) cleanupUnsavedProductImages();
 
 }
 
@@ -896,7 +912,9 @@ async function saveProduct(event) {
         featured:
             document.getElementById(
                 "productFeatured"
-            ).checked
+            ).checked,
+
+        status: document.getElementById("productEditorStatus").value
 
     };
 
@@ -976,6 +994,8 @@ if (!savedProductId) {
     );
 }
 // Save product images
+const orderedImages = getOrderedProductImages();
+
 const imageResponse = await fetch(
     "/api/admin/products/images",
     {
@@ -986,7 +1006,7 @@ const imageResponse = await fetch(
         },
         body: JSON.stringify({
             productId: savedProductId,
-            images: productImages.map((image, index) => ({
+            images: orderedImages.map((image, index) => ({
                 url: image.url,
                 altText: image.originalName || "",
                 sortOrder: index
@@ -1004,6 +1024,7 @@ if (!imageResponse.ok) {
         "Product saved, but images could not be saved"
     );
 }
+unsavedUploadedImageUrls = new Set();
         showProductFormMessage(
             editingProductId
                 ? "Product updated successfully."
@@ -1018,7 +1039,7 @@ if (!imageResponse.ok) {
         setTimeout(
             () => {
 
-                closeProductModal();
+                closeProductModal({ discardUploads: false });
 
             },
             600
@@ -1982,6 +2003,8 @@ async function handleProductImages(files) {
 
             });
 
+            unsavedUploadedImageUrls.add(data.image.url);
+
             renderProductImagePreview();
 
             message.textContent =
@@ -2144,25 +2167,25 @@ function renderProductImagePreview() {
 
 }
 function setPrimaryProductImage(index) {
+    const selected = productImages[index];
+    if (!selected) return;
 
-    productImages =
-        productImages.map(
-            (image, imageIndex) => ({
-                ...image,
-                primary:
-                    imageIndex === index
-            })
-        );
+    productImages = [selected, ...productImages.filter((_, imageIndex) => imageIndex !== index)]
+        .map((image, imageIndex) => ({ ...image, primary: imageIndex === 0, sortOrder: imageIndex }));
 
     renderProductImagePreview();
 
 }
 function removeProductImage(index) {
-
-    productImages.splice(
+    const [removedImage] = productImages.splice(
         index,
         1
     );
+
+    if (removedImage && unsavedUploadedImageUrls.has(removedImage.url)) {
+        unsavedUploadedImageUrls.delete(removedImage.url);
+        cleanupProductImages([removedImage.url]);
+    }
 
     if (
         productImages.length &&
@@ -2185,6 +2208,83 @@ function removeProductImage(index) {
 
     renderProductImagePreview();
 
+}
+
+async function loadAdminOrders() {
+    const table = document.getElementById("adminOrdersTable");
+    if (!table) return;
+    table.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;">Loading orders...</td></tr>';
+    try {
+        const response = await fetch("/api/admin/orders", { credentials: "include", cache: "no-store" });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.message || "Unable to load orders");
+        adminOrders = data.orders || [];
+        renderAdminOrders();
+    } catch (error) {
+        table.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;">Unable to load orders.</td></tr>';
+        console.error("ADMIN ORDERS ERROR:", error);
+    }
+}
+
+function renderAdminOrders() {
+    const table = document.getElementById("adminOrdersTable");
+    if (!table) return;
+    if (!adminOrders.length) {
+        table.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;">No orders yet.</td></tr>';
+        return;
+    }
+    table.innerHTML = adminOrders.map(order => `
+        <tr>
+          <td><strong>${escapeHtml(String(order.id).slice(0, 8).toUpperCase())}</strong><div class="product-description">${new Date(order.created_at).toLocaleString()}</div></td>
+          <td>${escapeHtml(order.customer_name || "Guest")}<div class="product-description">${escapeHtml(order.customer_email || "")}</div></td>
+          <td>$${Number(order.total || 0).toFixed(2)}</td>
+          <td><span class="product-status ${escapeHtml(order.payment_status)}">${escapeHtml(order.payment_status)}</span>${order.bitcoin_txid ? '<div class="product-description">TX submitted</div>' : ''}</td>
+          <td><span class="product-status ${escapeHtml(order.status)}">${escapeHtml(order.status)}</span></td>
+          <td><div class="table-actions">
+            ${order.payment_status === 'submitted' ? `<button class="secondary-button btn-small" data-order-payment="${order.id}">Confirm payment</button>` : ''}
+            ${order.status !== 'fulfilled' && order.payment_status === 'confirmed' ? `<button class="secondary-button btn-small" data-order-status="${order.id}">Mark fulfilled</button>` : ''}
+          </div></td>
+        </tr>`).join("");
+    table.querySelectorAll("[data-order-payment]").forEach(button => button.addEventListener("click", () => updateAdminOrder(button.dataset.orderPayment, { payment_status: "confirmed" })));
+    table.querySelectorAll("[data-order-status]").forEach(button => button.addEventListener("click", () => updateAdminOrder(button.dataset.orderStatus, { status: "fulfilled" })));
+}
+
+async function updateAdminOrder(id, update) {
+    try {
+        const response = await fetch(`/api/admin/orders?id=${encodeURIComponent(id)}`, {
+            method: "PATCH", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(update)
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.message || "Unable to update order");
+        await loadAdminOrders();
+    } catch (error) {
+        showProductsMessage(error.message || "Unable to update order", "error");
+    }
+}
+
+function getOrderedProductImages() {
+    const primaryIndex = productImages.findIndex(image => image.primary);
+    if (primaryIndex > 0) setPrimaryProductImage(primaryIndex);
+    return productImages;
+}
+
+function cleanupUnsavedProductImages() {
+    const urls = [...unsavedUploadedImageUrls];
+    unsavedUploadedImageUrls = new Set();
+    cleanupProductImages(urls);
+}
+
+async function cleanupProductImages(urls) {
+    if (!urls.length) return;
+    try {
+        await fetch("/api/admin/images/cleanup", {
+            method: "POST", credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ urls })
+        });
+    } catch (error) {
+        console.error("UNSAVED IMAGE CLEANUP ERROR:", error);
+    }
 }
 function closeCategoryModal() {
 

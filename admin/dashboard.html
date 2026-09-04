@@ -473,10 +473,14 @@
         color: #18753a;
       }
 
-      .product-status.inactive {
+.product-status.inactive {
         background: #f1f1f1;
         color: #777;
       }
+
+      .stock-indicator.low { color: #b45309; font-weight: 700; }
+      .stock-indicator.out { color: #b91c1c; font-weight: 700; }
+      .featured-badge { margin-left: 7px; color: #a16207; vertical-align: middle; }
 
       .product-actions {
         display: flex;
@@ -622,7 +626,8 @@
       }
 
       .form-group input,
-      .form-group textarea {
+      .form-group textarea,
+      .form-group select {
         width: 100%;
         border: 1px solid #ddd;
         border-radius: 9px;
@@ -636,7 +641,8 @@
       }
 
       .form-group input:focus,
-      .form-group textarea:focus {
+      .form-group textarea:focus,
+      .form-group select:focus {
         border-color: #111;
       }
 
@@ -965,12 +971,18 @@
         ========================== -->
 
           <section id="section-orders" class="admin-section" hidden>
-            <div class="admin-placeholder">
-              <i class="bx bx-shopping-bag"></i>
-
-              <h2>Orders</h2>
-
-              <p>Order management is coming next.</p>
+            <div class="section-header">
+              <div>
+                <h1>Orders</h1>
+                <p>Review payments and keep customers informed.</p>
+              </div>
+            </div>
+            <div id="ordersMessage" class="products-message"></div>
+            <div class="products-table-wrapper">
+              <table class="products-table">
+                <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Fulfilment</th><th>Actions</th></tr></thead>
+                <tbody id="adminOrdersTable"></tbody>
+              </table>
             </div>
           </section>
 
@@ -1141,6 +1153,14 @@
 
                 <span> Featured product </span>
               </label>
+            </div>
+
+            <div class="form-group">
+              <label for="productEditorStatus"> Visibility </label>
+              <select id="productEditorStatus">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
             </div>
           </div>
 
