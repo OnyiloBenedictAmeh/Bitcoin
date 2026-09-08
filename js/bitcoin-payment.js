@@ -576,3 +576,4 @@ document.addEventListener(
     "DOMContentLoaded",
     BitcoinPayment.init
 );
+import "./toast.js";

@@ -348,3 +348,4 @@ document.addEventListener(
     "DOMContentLoaded",
     OrdersPage.init
 );
+import "./toast.js";

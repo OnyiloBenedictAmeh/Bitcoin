@@ -1,3 +1,5 @@
+import { showToast } from "./toast.js";
+
 // ============================================
 // CARD PAYMENT — MVP
 // ============================================
@@ -174,6 +176,8 @@ const CardPayment = (() => {
     // ========================================
 
     function showError(message) {
+
+        showToast(message, "error");
 
         if (!elements.error) {
             return;

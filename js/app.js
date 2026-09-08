@@ -3,6 +3,7 @@
 // ============================================
 
 import { CartApi, renderCartCount } from "./cart-api.js";
+import "./toast.js";
 
 
 const StoreApp = (() => {

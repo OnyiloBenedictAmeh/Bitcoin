@@ -1,3 +1,7 @@
+import { showToast } from "../../js/toast.js";
+
+const API_ORIGIN = "https://bitcoin-topaz.vercel.app";
+
 const form =
     document.getElementById("adminLoginForm");
 
@@ -54,7 +58,7 @@ form.addEventListener(
 
             const response =
                 await fetch(
-                    "/api/auth/login",
+                    `${API_ORIGIN}/api/auth/login`,
                     {
                         method: "POST",
 
@@ -101,6 +105,7 @@ form.addEventListener(
                 "Login successful. Redirecting...",
                 "success"
             );
+            showToast("Login successful. Redirecting...", "success");
 
 
             setTimeout(
@@ -127,6 +132,7 @@ form.addEventListener(
                 "Unable to login",
                 "error"
             );
+            showToast(error.message || "Unable to login");
 
 
             setLoading(false);

@@ -1,3 +1,5 @@
+import { showToast } from "./toast.js";
+
 (() => {
     let mode = "login";
     const form = document.getElementById("authForm");
@@ -43,6 +45,7 @@
             window.location.href = result.user.role === "admin" ? "admin/dashboard.html" : safeReturnTo;
         } catch (error) {
             message.textContent = error.message || "Something went wrong";
+            showToast(message.textContent);
             submit.disabled = false;
         }
     });

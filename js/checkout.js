@@ -3,6 +3,7 @@
 // ============================================
 
 import { CartApi, renderCartCount } from "./cart-api.js";
+import { showToast } from "./toast.js";
 
 const CheckoutPage = (() => {
 
@@ -541,6 +542,8 @@ const CheckoutPage = (() => {
     // ========================================
 
     function showError(message) {
+
+        showToast(message, "error");
 
         if (!elements.error) {
             return;

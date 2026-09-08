@@ -678,3 +678,4 @@ document.addEventListener(
     "DOMContentLoaded",
     OrderPage.init
 );
+import "./toast.js";

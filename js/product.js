@@ -3,6 +3,7 @@
 // ============================================
 
 import { CartApi, renderCartCount } from "./cart-api.js";
+import { showToast } from "./toast.js";
 
 const ProductPage = (() => {
 
@@ -679,7 +680,7 @@ const ProductPage = (() => {
                 window.location.href = `customer-auth.html?returnTo=${encodeURIComponent(returnTo)}`;
                 return;
             }
-            alert(error.message || "Unable to add this item to your cart.");
+            showToast(error.message || "Unable to add this item to your cart.");
             return;
         }
 

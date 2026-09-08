@@ -1262,3 +1262,4 @@ document.addEventListener(
     "DOMContentLoaded",
     AccountPage.init
 );
+import "./toast.js";
