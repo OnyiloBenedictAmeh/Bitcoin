@@ -79,15 +79,19 @@ form.addEventListener(
                 );
 
 
-            const data =
-                await response.json();
+            const contentType = response.headers.get("content-type") || "";
+            const data = contentType.includes("application/json")
+                ? await response.json()
+                : {};
 
 
             if (!response.ok || !data.success) {
 
                 throw new Error(
                     data.message ||
-                    "Unable to login"
+                    (response.status === 405
+                        ? "The deployed API does not accept login requests. Deploy the current Vercel project and try again."
+                        : "Unable to login")
                 );
 
             }
