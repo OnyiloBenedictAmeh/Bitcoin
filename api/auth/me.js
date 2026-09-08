@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { jwtVerify } from "jose";
+import { applyCors } from "../_lib/cors.js";
 
 const sql = neon(process.env.DATABASE_URL);
 
@@ -26,6 +27,8 @@ function getCookie(req, name) {
 
 
 export default async function handler(req, res) {
+
+    if (applyCors(req, res)) return;
 
     if (req.method !== "GET") {
 

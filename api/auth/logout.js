@@ -1,4 +1,8 @@
+import { applyCors } from "../_lib/cors.js";
+
 export default function handler(req, res) {
+
+    if (applyCors(req, res)) return;
 
     if (req.method !== "POST") {
 
@@ -13,8 +17,8 @@ export default function handler(req, res) {
     res.setHeader(
         "Set-Cookie",
         [
-            "admin_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0",
-            "customer_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0"
+            "admin_session=; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=0",
+            "customer_session=; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=0"
         ]
     );
 

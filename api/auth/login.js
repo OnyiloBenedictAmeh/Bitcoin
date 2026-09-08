@@ -2,12 +2,15 @@ import { neon } from "@neondatabase/serverless";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import { rateLimit } from "../_lib/rateLimit.js";
+import { applyCors } from "../_lib/cors.js";
 
 const sql = neon(process.env.DATABASE_URL);
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export default async function handler(req, res) {
+
+    if (applyCors(req, res)) return;
 
     // ========================================
     // METHOD
@@ -153,7 +156,7 @@ export default async function handler(req, res) {
 
         res.setHeader(
             "Set-Cookie",
-            `${user.role === "admin" ? "admin_session" : "customer_session"}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=604800`
+            `${user.role === "admin" ? "admin_session" : "customer_session"}=${token}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=604800`
         );
 
 
