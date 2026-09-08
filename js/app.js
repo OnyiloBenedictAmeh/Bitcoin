@@ -292,29 +292,33 @@ const StoreApp = (() => {
     // ========================================
 
     function initSearch() {
+        const searchButton = document.getElementById("searchToggle");
+        const searchPanel = document.getElementById("homeSearch");
+        const searchInput = document.getElementById("homeProductSearch");
+        const searchForm = document.getElementById("homeSearchForm");
+        const clearButton = document.getElementById("homeClearSearch");
 
-        const searchButton =
-            document.querySelector(
-                '[aria-label="Search"]'
-            );
-
-
-        if (!searchButton) {
+        if (!searchButton || !searchPanel || !searchInput) {
             return;
         }
 
-
-        searchButton.addEventListener(
-            "click",
-            () => {
-
-                window.location.href =
-                    `shop.html?search=${encodeURIComponent(
-                        state.searchQuery
-                    )}`;
-
-            }
-        );
+        searchButton.addEventListener("click", () => {
+            const open = searchPanel.hidden;
+            searchPanel.hidden = !open;
+            searchPanel.classList.toggle("is-visible", open);
+            if (open) searchInput.focus();
+        });
+        searchInput.addEventListener("input", () => searchProducts(searchInput.value));
+        clearButton?.addEventListener("click", () => {
+            searchInput.value = "";
+            searchProducts("");
+            searchInput.focus();
+        });
+        searchForm?.addEventListener("submit", event => {
+            event.preventDefault();
+            const query = searchInput.value.trim();
+            window.location.href = `shop.html?search=${encodeURIComponent(query)}`;
+        });
 
     }
 

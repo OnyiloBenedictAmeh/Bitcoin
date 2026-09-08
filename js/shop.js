@@ -850,14 +850,14 @@ const ShopApp = (() => {
 
                 elements.shopSearch
                     .classList.toggle(
-                        "is-open"
+                        "is-visible"
                     );
 
 
                 if (
                     elements.shopSearch
                         .classList.contains(
-                            "is-open"
+                            "is-visible"
                         )
                 ) {
 
@@ -1137,6 +1137,14 @@ const ShopApp = (() => {
     async function init() {
 
     await loadProducts();
+
+    const searchQuery = new URLSearchParams(window.location.search).get("search")?.trim() || "";
+    if (searchQuery && elements.productSearch) {
+        state.search = searchQuery;
+        elements.productSearch.value = searchQuery;
+        elements.shopSearch?.classList.add("is-visible");
+        applyFilters();
+    }
 
     initSearchToggle();
 
