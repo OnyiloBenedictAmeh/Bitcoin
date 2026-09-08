@@ -2,6 +2,8 @@
 // ORDERS PAGE
 // ============================================
 
+import { CartApi, renderCartCount } from "./cart-api.js";
+
 const OrdersPage = (() => {
 
     let orders = [];
@@ -45,27 +47,12 @@ const OrdersPage = (() => {
     // LOAD ORDERS
     // ========================================
 
-    function loadOrders() {
-
-        try {
-
-            orders = JSON.parse(
-                localStorage.getItem(
-                    "orders"
-                ) || "[]"
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Unable to load orders:",
-                error
-            );
-
-            orders = [];
-
-        }
-
+    async function loadOrders() {
+        const response = await fetch("/api/orders", { credentials: "include" });
+        const data = await response.json().catch(() => ({}));
+        if (response.status === 401) { window.location.href = "customer-auth.html"; return; }
+        if (!response.ok || !data.success) throw new Error(data.message || "Unable to load orders");
+        orders = data.orders || [];
     }
 
 
@@ -162,7 +149,7 @@ const OrdersPage = (() => {
                 order => {
 
                     const itemCount =
-                        order.items?.reduce(
+                        order.item_count ?? (order.items?.reduce(
                             (
                                 total,
                                 item
@@ -172,7 +159,7 @@ const OrdersPage = (() => {
                                     item.quantity
                                 ),
                             0
-                        ) || 0;
+                        ) || 0);
 
 
                     return `
@@ -206,7 +193,7 @@ const OrdersPage = (() => {
 
                                     <span>
                                         ${formatDate(
-                                            order.createdAt
+                                            order.created_at || order.createdAt
                                         )}
                                     </span>
 
@@ -230,7 +217,7 @@ const OrdersPage = (() => {
 
                                 <span>
                                     ${
-                                        order.paymentMethod ===
+                                        (order.payment_method || order.paymentMethod) ===
                                         "bitcoin"
                                             ? "₿ Bitcoin"
                                             : "💳 Card"
@@ -290,48 +277,8 @@ const OrdersPage = (() => {
     // CART COUNT
     // ========================================
 
-    function updateCartCount() {
-
-        let cart = [];
-
-
-        try {
-
-            cart = JSON.parse(
-                localStorage.getItem(
-                    "cart"
-                ) || "[]"
-            );
-
-        } catch {
-
-            cart = [];
-
-        }
-
-
-        const count =
-            cart.reduce(
-                (total, item) =>
-                    total +
-                    Number(item.quantity),
-                0
-            );
-
-
-        document
-            .querySelectorAll(
-                ".cart-count"
-            )
-            .forEach(
-                element => {
-
-                    element.textContent =
-                        count;
-
-                }
-            );
-
+    async function updateCartCount() {
+        try { renderCartCount(await CartApi.list()); } catch (error) { if (!error.unauthorized) console.error("CART LOAD ERROR:", error); }
     }
 
 
@@ -375,13 +322,13 @@ const OrdersPage = (() => {
     // INIT
     // ========================================
 
-    function init() {
+    async function init() {
 
-        loadOrders();
+        try { await loadOrders(); } catch (error) { console.error("ORDER LOAD ERROR:", error); }
 
         renderOrders();
 
-        updateCartCount();
+        await updateCartCount();
 
         initMenu();
 

@@ -129,6 +129,29 @@ body {
   backdrop-filter: blur(14px);
 }
 
+.auth-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.auth-login,
+.auth-signup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid #111111;
+  border-radius: 8px;
+  color: #111111;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.auth-login:hover { background: #f7f7f7; }
+.auth-signup { background: #111111; color: #ffffff; }
+.auth-signup:hover { background: #333333; color: #ffffff; }
+
 .header-inner {
   height: 100%;
   display: flex;
@@ -553,6 +576,13 @@ body {
   }
 }
 @media (max-width: 650px) {
+  .auth-login {
+    display: none;
+  }
+  .auth-signup {
+    min-height: 34px;
+    padding: 0 10px;
+  }
   .container {
     width: min(100% - 28px, 1240px);
   }

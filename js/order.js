@@ -2,6 +2,8 @@
 // ORDER DETAILS PAGE
 // ============================================
 
+import { CartApi, renderCartCount } from "./cart-api.js";
+
 const OrderPage = (() => {
 
     let order = null;
@@ -96,7 +98,7 @@ const OrderPage = (() => {
     // LOAD ORDER
     // ========================================
 
-    function loadOrder() {
+    async function loadOrder() {
 
         const orderId =
             getOrderId();
@@ -107,35 +109,20 @@ const OrderPage = (() => {
         }
 
 
-        let orders = [];
-
-
         try {
-
-            orders = JSON.parse(
-                localStorage.getItem(
-                    "orders"
-                ) || "[]"
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Unable to load orders:",
-                error
-            );
-
-            return;
-
-        }
-
-
-        order =
-            orders.find(
-                item =>
-                    String(item.id) ===
-                    String(orderId)
-            );
+            const response = await fetch(`/api/orders/detail?id=${encodeURIComponent(orderId)}`, { credentials: "include" });
+            const data = await response.json().catch(() => ({}));
+            if (response.status === 401) { window.location.href = "customer-auth.html"; return; }
+            if (!response.ok || !data.success) return;
+            const source = data.order;
+            order = {
+                ...source,
+                createdAt: source.created_at, paymentMethod: source.payment_method,
+                paymentStatus: source.payment_status, shippingCost: source.shipping,
+                customer: { firstName: String(source.customer_name || "").split(" ")[0], lastName: String(source.customer_name || "").split(" ").slice(1).join(" "), email: source.customer_email, phone: source.customer_phone, ...(source.shipping_address || {}) },
+                items: (source.items || []).map(item => ({ ...item, id: item.product_id, name: item.product_name }))
+            };
+        } catch (error) { console.error("Unable to load order:", error); }
 
     }
 
@@ -584,53 +571,8 @@ const OrderPage = (() => {
     // CART COUNT
     // ========================================
 
-    function updateCartCount() {
-
-        let cart = [];
-
-
-        try {
-
-            cart = JSON.parse(
-                localStorage.getItem(
-                    "cart"
-                ) || "[]"
-            );
-
-        } catch {
-
-            cart = [];
-
-        }
-
-
-        const count =
-            cart.reduce(
-                (
-                    total,
-                    item
-                ) =>
-                    total +
-                    Number(
-                        item.quantity
-                    ),
-                0
-            );
-
-
-        document
-            .querySelectorAll(
-                ".cart-count"
-            )
-            .forEach(
-                element => {
-
-                    element.textContent =
-                        count;
-
-                }
-            );
-
+    async function updateCartCount() {
+        try { renderCartCount(await CartApi.list()); } catch (error) { if (!error.unauthorized) console.error("CART LOAD ERROR:", error); }
     }
 
 
@@ -692,11 +634,11 @@ const OrderPage = (() => {
     // INIT
     // ========================================
 
-    function init() {
+    async function init() {
 
-        loadOrder();
+        await loadOrder();
 
-        updateCartCount();
+        await updateCartCount();
 
         initMenu();
 

@@ -2,7 +2,7 @@
 // STORE APPLICATION
 // ============================================
 
-import { products } from "./products.js";
+import { CartApi, renderCartCount } from "./cart-api.js";
 
 
 const StoreApp = (() => {
@@ -15,7 +15,8 @@ const StoreApp = (() => {
 
         cartCount: 0,
 
-        searchQuery: ""
+        searchQuery: "",
+        products: []
 
     };
 
@@ -94,7 +95,7 @@ const StoreApp = (() => {
     // ========================================
 
     function renderFeaturedProducts(
-        productList = products
+        productList = state.products
     ) {
 
         if (!elements.featuredProducts) {
@@ -237,13 +238,13 @@ const StoreApp = (() => {
 
             renderFeaturedProducts();
 
-            return products;
+            return state.products;
 
         }
 
 
         const results =
-            products.filter(product => {
+            state.products.filter(product => {
 
                 const name =
                     String(
@@ -368,7 +369,21 @@ const StoreApp = (() => {
     // INITIALIZE
     // ========================================
 
-    function init() {
+    async function init() {
+
+        try {
+            const response = await fetch("/api/products");
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || "Unable to load products");
+            state.products = (data.products || []).map(product => ({
+                ...product,
+                image: product.images?.[0]?.url || ""
+            }));
+        } catch (error) {
+            console.error("PRODUCT LOAD ERROR:", error);
+        }
+
+        try { renderCartCount(await CartApi.list()); } catch (error) { if (!error.unauthorized) console.error("CART LOAD ERROR:", error); }
 
         renderFeaturedProducts();
 

@@ -92,26 +92,28 @@ const CardPayment = (() => {
     // LOAD ORDER
     // ========================================
 
-    function loadOrder() {
-
+    async function loadOrder() {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        if (!id) return false;
         try {
-
-            order = JSON.parse(
-                localStorage.getItem(
-                    "pendingOrder"
-                )
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Unable to load pending order:",
-                error
-            );
-
-            order = null;
-
-        }
+            const response = await fetch(`/api/orders/detail?id=${encodeURIComponent(id)}`, { credentials: "include" });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success) return false;
+            order = data.order;
+            const sessionId = params.get("session_id");
+            if (sessionId) {
+                const verify = await fetch(`/api/payments/verify-checkout-session?id=${encodeURIComponent(id)}&session_id=${encodeURIComponent(sessionId)}`, { credentials: "include" });
+                const verification = await verify.json().catch(() => ({}));
+                if (verification.success && verification.paid) {
+                    elements.payment.hidden = true;
+                    elements.success.hidden = false;
+                    elements.orderId.textContent = `Order #${id}`;
+                    elements.viewOrder.href = `order.html?id=${encodeURIComponent(id)}`;
+                    return true;
+                }
+            }
+        } catch (error) { console.error("Unable to load order:", error); order = null; }
 
 
         if (!order) {
@@ -161,7 +163,7 @@ const CardPayment = (() => {
 
         elements.usd.textContent =
             formatUsd(
-                order.subtotal
+                order.total
             );
 
     }
@@ -1061,173 +1063,30 @@ const CardPayment = (() => {
     // SAVE COMPLETED ORDER
     // ========================================
 
-    function saveCompletedOrder() {
-
-        let orders = [];
-
-
-        try {
-
-            orders = JSON.parse(
-                localStorage.getItem(
-                    "orders"
-                ) || "[]"
-            );
-
-        } catch {
-
-            orders = [];
-
-        }
-
-
-        order.status =
-            "paid";
-
-
-        order.payment = {
-
-            method:
-                "card",
-
-            cardType:
-                detectedCardType,
-
-            cardBrand:
-                getCardTypeLabel(
-                    detectedCardType
-                ),
-
-            status:
-                "paid",
-
-            demo:
-                true,
-
-            paidAt:
-                new Date().toISOString()
-
-        };
-
-
-        /*
-         * IMPORTANT:
-         *
-         * We deliberately do NOT store:
-         *
-         * - card number
-         * - CVV
-         *
-         * Only the card network/type is stored.
-         */
-
-
-        orders.unshift(
-            order
-        );
-
-
-        localStorage.setItem(
-            "orders",
-            JSON.stringify(
-                orders
-            )
-        );
-
-
-        localStorage.setItem(
-            "lastOrder",
-            JSON.stringify(
-                order
-            )
-        );
-
-
-        localStorage.removeItem(
-            "pendingOrder"
-        );
-
-
-        localStorage.removeItem(
-            "cart"
-        );
-
-    }
-
-
     // ========================================
     // PROCESS PAYMENT
     // ========================================
 
-    function processPayment() {
-
-        if (!order) {
-            return;
+    async function processPayment() {
+        if (!order || !elements.pay) return;
+        hideError();
+        elements.pay.disabled = true;
+        elements.pay.classList.add("is-loading");
+        try {
+            const response = await fetch("/api/payments/create-checkout-session", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orderId: order.id })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success || !data.url) throw new Error(data.message || "Unable to start secure checkout");
+            window.location.assign(data.url);
+        } catch (error) {
+            showError(error.message || "Unable to start secure checkout.");
+            elements.pay.disabled = false;
+            elements.pay.classList.remove("is-loading");
         }
-
-
-        if (!validateCard()) {
-            return;
-        }
-
-
-        /*
-         * DEMO PAYMENT
-         *
-         * In production, card details should
-         * be sent directly to a PCI-compliant
-         * payment provider using tokenization.
-         *
-         * Never send raw card details to your
-         * own database or store them in localStorage.
-         */
-
-
-        elements.pay.disabled =
-            true;
-
-
-        elements.pay.innerHTML = `
-
-            <i class="bx bx-loader-alt bx-spin"></i>
-
-            Processing Payment...
-
-        `;
-
-
-        setTimeout(
-            () => {
-
-                saveCompletedOrder();
-
-
-                elements.payment.hidden =
-                    true;
-
-
-                elements.success.hidden =
-                    false;
-
-
-                elements.orderId.textContent =
-                    `Order ${order.id}`;
-
-
-                if (
-                    elements.viewOrder
-                ) {
-
-                    elements.viewOrder.href =
-                        `order.html?id=${encodeURIComponent(
-                            order.id
-                        )}`;
-
-                }
-
-            },
-            1500
-        );
 
     }
 
@@ -1269,9 +1128,9 @@ const CardPayment = (() => {
     // INIT
     // ========================================
 
-    function init() {
+    async function init() {
 
-        if (!loadOrder()) {
+        if (!await loadOrder()) {
             return;
         }
 

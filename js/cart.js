@@ -2,6 +2,8 @@
 // CART PAGE
 // ============================================
 
+import { CartApi, renderCartCount } from "./cart-api.js";
+
 const CartPage = (() => {
 
     // ========================================
@@ -54,41 +56,18 @@ const CartPage = (() => {
     // LOAD CART
     // ========================================
 
-    function loadCart() {
-
-        try {
-
-            cart = JSON.parse(
-                localStorage.getItem("cart") || "[]"
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Error loading cart:",
-                error
-            );
-
-            cart = [];
-
+    async function loadCart() {
+        try { cart = await CartApi.list(); }
+        catch (error) {
+            if (error.unauthorized) { window.location.href = "customer-auth.html"; return; }
+            console.error("Error loading cart:", error); cart = [];
         }
-
     }
 
 
     // ========================================
     // SAVE CART
     // ========================================
-
-    function saveCart() {
-
-        localStorage.setItem(
-            "cart",
-            JSON.stringify(cart)
-        );
-
-    }
-
 
     // ========================================
     // FORMAT PRICE
@@ -113,32 +92,7 @@ const CartPage = (() => {
 
     function updateCartCount() {
 
-        const count = cart.reduce(
-            (total, item) =>
-                total + Number(item.quantity || 0),
-            0
-        );
-
-
-        if (elements.cartCount) {
-
-            elements.cartCount.textContent =
-                count;
-
-        }
-
-
-        // Also update any cart badges
-        // that might exist on the page.
-
-        document
-            .querySelectorAll(".cart-count")
-            .forEach(element => {
-
-                element.textContent =
-                    count;
-
-            });
+        renderCartCount(cart);
 
     }
 
@@ -261,7 +215,7 @@ const CartPage = (() => {
 
             <article
                 class="cart-item"
-                data-id="${item.id}"
+                data-id="${item.cartItemId}"
             >
 
                 <!-- PRODUCT -->
@@ -291,7 +245,7 @@ const CartPage = (() => {
                             type="button"
                             class="remove-item"
                             data-action="remove"
-                            data-id="${item.id}"
+                            data-id="${item.cartItemId}"
                         >
 
                             Remove
@@ -310,7 +264,7 @@ const CartPage = (() => {
                     <button
                         type="button"
                         data-action="decrease"
-                        data-id="${item.id}"
+                        data-id="${item.cartItemId}"
                         aria-label="Decrease quantity"
                     >
                         −
@@ -325,7 +279,7 @@ const CartPage = (() => {
                     <button
                         type="button"
                         data-action="increase"
-                        data-id="${item.id}"
+                        data-id="${item.cartItemId}"
                         aria-label="Increase quantity"
                     >
                         +
@@ -379,9 +333,7 @@ const CartPage = (() => {
     function findItem(id) {
 
         return cart.find(
-            item =>
-                Number(item.id) ===
-                Number(id)
+            item => String(item.cartItemId) === String(id)
         );
 
     }
@@ -391,7 +343,7 @@ const CartPage = (() => {
     // CHANGE QUANTITY
     // ========================================
 
-    function changeQuantity(
+    async function changeQuantity(
         id,
         amount
     ) {
@@ -405,29 +357,11 @@ const CartPage = (() => {
         }
 
 
-        item.quantity = Math.min(
-            Number.isFinite(Number(item.stock)) ? Number(item.stock) : Infinity,
-            Number(item.quantity) + amount
-        );
-
-
-        // Remove if quantity reaches zero
-
-        if (item.quantity <= 0) {
-
-            cart =
-                cart.filter(
-                    cartItem =>
-                        Number(cartItem.id) !==
-                        Number(id)
-                );
-
-        }
-
-
-        saveCart();
-
-        renderCart();
+        try {
+            const next = Number(item.quantity) + amount;
+            cart = next <= 0 ? await CartApi.remove(item.cartItemId) : await CartApi.setQuantity(item.cartItemId, next);
+            renderCart();
+        } catch (error) { alert(error.message || "Unable to update cart"); }
 
     }
 
@@ -436,20 +370,11 @@ const CartPage = (() => {
     // REMOVE ITEM
     // ========================================
 
-    function removeItem(id) {
-
-        cart =
-            cart.filter(
-                item =>
-                    Number(item.id) !==
-                    Number(id)
-            );
-
-
-        saveCart();
-
-        renderCart();
-
+    async function removeItem(id) {
+        const item = findItem(id);
+        if (!item) return;
+        try { cart = await CartApi.remove(item.cartItemId); renderCart(); }
+        catch (error) { alert(error.message || "Unable to remove item"); }
     }
 
 
@@ -565,9 +490,9 @@ const CartPage = (() => {
     // INITIALIZE
     // ========================================
 
-    function init() {
+    async function init() {
 
-        loadCart();
+        await loadCart();
 
         renderCart();
 

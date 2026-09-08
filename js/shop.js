@@ -2,6 +2,8 @@
 // STORE SHOP
 // ============================================
 
+import { CartApi, renderCartCount } from "./cart-api.js";
+
 const ShopApp = (() => {
 
     // ========================================
@@ -1051,57 +1053,8 @@ const ShopApp = (() => {
     // CART COUNT
     // ========================================
 
-    function updateCartCount() {
-
-        if (!elements.cartCount) {
-            return;
-        }
-
-
-        let cart = [];
-
-
-        try {
-
-            cart = JSON.parse(
-                localStorage.getItem(
-                    "cart"
-                ) || "[]"
-            );
-
-        } catch {
-
-            cart = [];
-
-        }
-
-
-        if (!Array.isArray(cart)) {
-
-            cart = [];
-
-        }
-
-
-        const count =
-            cart.reduce(
-                (total, item) => {
-
-                    return total +
-                        (
-                            Number(
-                                item.quantity
-                            ) || 1
-                        );
-
-                },
-                0
-            );
-
-
-        elements.cartCount.textContent =
-            count;
-
+    async function updateCartCount() {
+        try { renderCartCount(await CartApi.list()); } catch (error) { if (!error.unauthorized) console.error("CART LOAD ERROR:", error); }
     }
 
 
@@ -1197,7 +1150,7 @@ const ShopApp = (() => {
 
     initStorageListener();
 
-    updateCartCount();
+    await updateCartCount();
 
     setCurrentYear();
 

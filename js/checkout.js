@@ -2,6 +2,8 @@
 // CHECKOUT PAGE
 // ============================================
 
+import { CartApi, renderCartCount } from "./cart-api.js";
+
 const CheckoutPage = (() => {
 
     // ========================================
@@ -66,15 +68,11 @@ const CheckoutPage = (() => {
     // LOAD CART
     // ========================================
 
-    function loadCart() {
+    async function loadCart() {
 
         try {
 
-            cart = JSON.parse(
-                localStorage.getItem(
-                    "cart"
-                ) || "[]"
-            );
+            cart = await CartApi.list();
 
         } catch (error) {
 
@@ -83,6 +81,7 @@ const CheckoutPage = (() => {
                 error
             );
 
+            if (error.unauthorized) { window.location.href = "customer-auth.html"; return; }
             cart = [];
 
         }
@@ -797,7 +796,7 @@ const CheckoutPage = (() => {
                 method: "POST",
                 credentials: "include",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ customer, items: cart })
+                body: JSON.stringify({ customer, items: cart, paymentMethod })
             });
             const data = await response.json();
             if (!response.ok || !data.success) throw new Error(data.message || "Unable to create order");
@@ -816,17 +815,7 @@ const CheckoutPage = (() => {
          * Save as the active order.
          */
 
-        localStorage.setItem(
-            "pendingOrder",
-            JSON.stringify(order)
-        );
-
-
-        /*
-         * Also save to order history.
-         */
-
-            localStorage.removeItem("cart");
+            await CartApi.clear();
 
 
         /*
@@ -836,12 +825,12 @@ const CheckoutPage = (() => {
             if (paymentMethod === "bitcoin") {
 
             window.location.href =
-                "bitcoin-payment.html";
+                `bitcoin-payment.html?id=${encodeURIComponent(order.id)}`;
 
             } else {
 
             window.location.href =
-                "card-payment.html";
+                `card-payment.html?id=${encodeURIComponent(order.id)}`;
 
             }
         } catch (error) {
@@ -870,9 +859,9 @@ const CheckoutPage = (() => {
     // INITIALIZE
     // ========================================
 
-    function init() {
+    async function init() {
 
-        loadCart();
+        await loadCart();
 
         handleEmptyCart();
 

@@ -69,26 +69,15 @@ const BitcoinPayment = (() => {
     // LOAD ORDER
     // ========================================
 
-    function loadOrder() {
-
+    async function loadOrder() {
+        const id = new URLSearchParams(window.location.search).get("id");
+        if (!id) return false;
         try {
-
-            order = JSON.parse(
-                localStorage.getItem(
-                    "pendingOrder"
-                )
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Unable to load pending order:",
-                error
-            );
-
-            order = null;
-
-        }
+            const response = await fetch(`/api/orders/detail?id=${encodeURIComponent(id)}`, { credentials: "include" });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success) return false;
+            order = data.order;
+        } catch (error) { console.error("Unable to load order:", error); order = null; }
 
 
         if (!order) {
@@ -481,33 +470,6 @@ const BitcoinPayment = (() => {
 
 
         /*
-         * Update the existing order
-         * in order history.
-         */
-
-        localStorage.setItem("lastOrder", JSON.stringify(order));
-
-
-        /*
-         * Remove pending payment.
-         */
-
-        localStorage.removeItem(
-            "pendingOrder"
-        );
-
-
-        /*
-         * Clear cart after successful
-         * payment.
-         */
-
-        localStorage.removeItem(
-            "cart"
-        );
-
-
-        /*
          * Show success screen.
          */
 
@@ -564,9 +526,9 @@ const BitcoinPayment = (() => {
     // INIT
     // ========================================
 
-    function init() {
+    async function init() {
 
-        if (!loadOrder()) {
+        if (!await loadOrder()) {
             return;
         }
 

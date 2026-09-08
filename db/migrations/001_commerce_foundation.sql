@@ -11,6 +11,10 @@ ALTER TABLE orders
     ADD COLUMN IF NOT EXISTS bitcoin_amount numeric,
     ADD COLUMN IF NOT EXISTS bitcoin_txid varchar;
 
+-- Stripe Checkout session/payment intent reference for card orders.
+ALTER TABLE orders
+    ADD COLUMN IF NOT EXISTS stripe_session_id varchar;
+
 ALTER TABLE orders
     ALTER COLUMN status SET DEFAULT 'pending',
     ALTER COLUMN payment_status SET DEFAULT 'pending';
@@ -25,3 +29,15 @@ CREATE INDEX IF NOT EXISTS order_items_order_id_idx
 ALTER TABLE users
     ADD COLUMN IF NOT EXISTS phone varchar,
     ALTER COLUMN role SET DEFAULT 'customer';
+
+CREATE TABLE IF NOT EXISTS cart_items (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    product_id uuid NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    quantity integer NOT NULL CHECK (quantity BETWEEN 1 AND 99),
+    options jsonb NOT NULL DEFAULT '{}'::jsonb,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    updated_at timestamptz NOT NULL DEFAULT NOW(),
+    UNIQUE (user_id, product_id, options)
+);
+CREATE INDEX IF NOT EXISTS cart_items_user_id_idx ON cart_items (user_id, created_at);

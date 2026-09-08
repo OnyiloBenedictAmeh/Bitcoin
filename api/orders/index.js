@@ -24,8 +24,11 @@ export default async function handler(req, res) {
         if (!customer) return;
         try {
             const orders = await sql`
-                SELECT id, status, subtotal, shipping, total, payment_status, payment_method, payment_reference, created_at
-                FROM orders WHERE user_id = ${customer.id} ORDER BY created_at DESC
+                SELECT o.id, o.status, o.subtotal, o.shipping, o.total, o.payment_status, o.payment_method, o.payment_reference, o.created_at,
+                       COALESCE(SUM(oi.quantity), 0)::integer AS item_count
+                FROM orders o LEFT JOIN order_items oi ON oi.order_id = o.id
+                WHERE o.user_id = ${customer.id}
+                GROUP BY o.id ORDER BY o.created_at DESC
             `;
             return res.status(200).json({ success: true, orders });
         } catch (error) {
@@ -38,8 +41,9 @@ export default async function handler(req, res) {
     if (!rateLimit(req, res, { limit: 10, windowMs: 60_000 })) return;
     const customer = await requireCustomer(req, res, { optional: true });
     const details = customerDetails(req.body);
+    const paymentMethod = String(req.body?.paymentMethod || "bitcoin").toLowerCase();
     const cart = Array.isArray(req.body?.items) ? req.body.items : [];
-    if (!details || !cart.length || cart.length > MAX_ITEMS) {
+    if (!details || !cart.length || cart.length > MAX_ITEMS || !["bitcoin", "card"].includes(paymentMethod)) {
         return res.status(400).json({ success: false, message: "Valid customer information and cart items are required" });
     }
 
@@ -63,7 +67,7 @@ export default async function handler(req, res) {
         const subtotal = lines.reduce((sum, line) => sum + Number(line.product.price) * line.quantity, 0);
         const orders = await sql`
             INSERT INTO orders (user_id, status, subtotal, shipping, total, payment_status, payment_method, customer_name, customer_email, customer_phone, shipping_address)
-            VALUES (${customer?.id || null}, 'pending', ${subtotal}, ${0}, ${subtotal}, 'pending', 'bitcoin', ${details.name}, ${details.email}, ${details.phone || null}, ${JSON.stringify(details.address)}::jsonb)
+            VALUES (${customer?.id || null}, 'pending', ${subtotal}, ${0}, ${subtotal}, 'pending', ${paymentMethod}, ${details.name}, ${details.email}, ${details.phone || null}, ${JSON.stringify(details.address)}::jsonb)
             RETURNING id, status, subtotal, shipping, total, payment_status, payment_method, created_at
         `;
         const order = orders[0];

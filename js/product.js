@@ -2,6 +2,8 @@
 // PRODUCT PAGE
 // ============================================
 
+import { CartApi, renderCartCount } from "./cart-api.js";
+
 const ProductPage = (() => {
 
     // ========================================
@@ -665,70 +667,21 @@ const ProductPage = (() => {
     // ADD TO CART
     // ========================================
 
-    function addToCart() {
+    async function addToCart() {
 
         if (Number(state.product.stock) <= 0) return;
 
-        const cart =
-            JSON.parse(
-                localStorage.getItem(
-                    "cart"
-                ) || "[]"
-            );
-
-
-        const selectedOptions = JSON.stringify(state.selectedOptions);
-        const existing = cart.find(item =>
-            String(item.id) === String(state.product.id) &&
-            JSON.stringify(item.options || {}) === selectedOptions
-        );
-
-
-        if (existing) {
-
-            existing.quantity = Math.min(
-                Number(state.product.stock),
-                existing.quantity + state.quantity
-            );
-
-        } else {
-
-            cart.push({
-
-                id:
-                    state.product.id,
-
-                name:
-                    state.product.name,
-
-                price:
-                    state.product.price,
-
-                image:
-                    state.product.images?.[0] || "",
-
-                quantity:
-                    state.quantity,
-
-                stock: Number(state.product.stock),
-
-                options:
-                    {
-                        ...state.selectedOptions
-                    }
-
-            });
-
+        try {
+            renderCartCount(await CartApi.add(state.product.id, state.quantity, state.selectedOptions));
+        } catch (error) {
+            if (error.unauthorized) {
+                const returnTo = `product.html?id=${encodeURIComponent(state.product.id)}`;
+                window.location.href = `customer-auth.html?returnTo=${encodeURIComponent(returnTo)}`;
+                return;
+            }
+            alert(error.message || "Unable to add this item to your cart.");
+            return;
         }
-
-
-        localStorage.setItem(
-            "cart",
-            JSON.stringify(cart)
-        );
-
-
-        updateCartCount();
 
 
         const button =
@@ -773,37 +726,8 @@ const ProductPage = (() => {
     // CART COUNT
     // ========================================
 
-    function updateCartCount() {
-
-        const cart =
-            JSON.parse(
-                localStorage.getItem(
-                    "cart"
-                ) || "[]"
-            );
-
-
-        const count =
-            cart.reduce(
-                (total, item) =>
-                    total + item.quantity,
-                0
-            );
-
-
-        document
-            .querySelectorAll(
-                ".cart-count"
-            )
-            .forEach(
-                element => {
-
-                    element.textContent =
-                        count;
-
-                }
-            );
-
+    async function updateCartCount() {
+        try { renderCartCount(await CartApi.list()); } catch (error) { if (!error.unauthorized) console.error("CART LOAD ERROR:", error); }
     }
 
 
@@ -1014,7 +938,7 @@ const ProductPage = (() => {
 
         renderRelatedProducts();
 
-        updateCartCount();
+        await updateCartCount();
 
         initMenu();
 
