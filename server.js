@@ -1,5 +1,11 @@
 import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { parse } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 10000;
 
@@ -17,16 +23,41 @@ const routes = {
     "/api/admin/images/upload": "./api/admin/images/upload.js"
 };
 
+const mimeTypes = {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".ico": "image/x-icon",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2"
+};
+
 function setCors(req, res) {
     const origin = process.env.FRONTEND_ORIGIN;
 
     if (origin) {
-        res.setHeader("Access-Control-Allow-Origin", origin);
-        res.setHeader("Access-Control-Allow-Credentials", "true");
+        res.setHeader(
+            "Access-Control-Allow-Origin",
+            origin
+        );
+
+        res.setHeader(
+            "Access-Control-Allow-Credentials",
+            "true"
+        );
+
         res.setHeader(
             "Access-Control-Allow-Headers",
             "Content-Type"
         );
+
         res.setHeader(
             "Access-Control-Allow-Methods",
             "GET,POST,PATCH,PUT,DELETE,OPTIONS"
@@ -42,8 +73,13 @@ function parseCookies(cookieHeader = "") {
 
         if (index === -1) return;
 
-        const key = part.slice(0, index).trim();
-        const value = part.slice(index + 1).trim();
+        const key = part
+            .slice(0, index)
+            .trim();
+
+        const value = part
+            .slice(index + 1)
+            .trim();
 
         cookies[key] = decodeURIComponent(value);
     });
@@ -79,7 +115,7 @@ function createResponse(res) {
     };
 }
 
-async function readJsonBody(req) {
+function readJsonBody(req) {
     return new Promise((resolve, reject) => {
         let body = "";
 
@@ -104,104 +140,240 @@ async function readJsonBody(req) {
     });
 }
 
-const server = http.createServer(async (req, res) => {
-    try {
-        setCors(req, res);
+function serveStaticFile(req, res, pathname) {
+    let requestedPath = pathname;
 
-        if (req.method === "OPTIONS") {
-            res.statusCode = 204;
-            res.end();
-            return;
-        }
+    if (requestedPath === "/") {
+        requestedPath = "/index.html";
+    }
 
-        const { pathname } = parse(req.url);
+    const decodedPath = decodeURIComponent(
+        requestedPath
+    );
 
-        const modulePath = routes[pathname];
+    const filePath = path.resolve(
+        __dirname,
+        "." + decodedPath
+    );
 
-        if (!modulePath) {
-            res.statusCode = 404;
-            res.setHeader("Content-Type", "application/json");
-            res.end(
-                JSON.stringify({
-                    success: false,
-                    message: "API route not found"
-                })
+    /*
+     * Prevent requests from escaping the project directory.
+     */
+    if (
+        filePath !== __dirname &&
+        !filePath.startsWith(__dirname + path.sep)
+    ) {
+        res.statusCode = 403;
+        res.end("Forbidden");
+        return;
+    }
+
+    fs.stat(filePath, (statError, stats) => {
+        if (!statError && stats.isDirectory()) {
+            const indexPath = path.join(
+                filePath,
+                "index.html"
             );
+
+            fs.readFile(
+                indexPath,
+                (error, data) => {
+                    if (error) {
+                        res.statusCode = 404;
+                        res.end("Not Found");
+                        return;
+                    }
+
+                    res.statusCode = 200;
+                    res.setHeader(
+                        "Content-Type",
+                        "text/html; charset=utf-8"
+                    );
+
+                    res.end(data);
+                }
+            );
+
             return;
         }
 
-        /*
-         * Multipart uploads must receive the original
-         * request stream, so do not parse the body for them.
-         */
-        const contentType =
-            req.headers["content-type"] || "";
+        fs.readFile(
+            filePath,
+            (error, data) => {
+                if (error) {
+                    res.statusCode = 404;
+                    res.end("Not Found");
+                    return;
+                }
 
-        if (
-            !contentType.startsWith("multipart/form-data")
-        ) {
-            try {
-                req.body = await readJsonBody(req);
-            } catch {
-                res.statusCode = 400;
+                const extension =
+                    path.extname(filePath)
+                        .toLowerCase();
+
+                res.statusCode = 200;
+
+                res.setHeader(
+                    "Content-Type",
+                    mimeTypes[extension] ||
+                        "application/octet-stream"
+                );
+
+                res.end(data);
+            }
+        );
+    });
+}
+
+const server = http.createServer(
+    async (req, res) => {
+        try {
+            setCors(req, res);
+
+            const { pathname } = parse(req.url);
+
+            /*
+             * CORS preflight
+             */
+            if (req.method === "OPTIONS") {
+                res.statusCode = 204;
+                res.end();
+                return;
+            }
+
+            /*
+             * API routes
+             */
+            if (pathname.startsWith("/api/")) {
+                const modulePath =
+                    routes[pathname];
+
+                if (!modulePath) {
+                    res.statusCode = 404;
+
+                    res.setHeader(
+                        "Content-Type",
+                        "application/json"
+                    );
+
+                    res.end(
+                        JSON.stringify({
+                            success: false,
+                            message:
+                                "API route not found"
+                        })
+                    );
+
+                    return;
+                }
+
+                const contentType =
+                    req.headers["content-type"] ||
+                    "";
+
+                /*
+                 * Do NOT consume multipart requests.
+                 * Busboy needs the original request stream.
+                 */
+                if (
+                    !contentType.startsWith(
+                        "multipart/form-data"
+                    )
+                ) {
+                    try {
+                        req.body =
+                            await readJsonBody(req);
+                    } catch {
+                        res.statusCode = 400;
+
+                        res.setHeader(
+                            "Content-Type",
+                            "application/json"
+                        );
+
+                        res.end(
+                            JSON.stringify({
+                                success: false,
+                                message:
+                                    "Invalid JSON body"
+                            })
+                        );
+
+                        return;
+                    }
+                }
+
+                req.cookies =
+                    parseCookies(
+                        req.headers.cookie
+                    );
+
+                const module =
+                    await import(modulePath);
+
+                const handler =
+                    module.default;
+
+                if (
+                    typeof handler !==
+                    "function"
+                ) {
+                    throw new Error(
+                        `Invalid API handler: ${modulePath}`
+                    );
+                }
+
+                await handler(
+                    req,
+                    createResponse(res)
+                );
+
+                if (!res.writableEnded) {
+                    res.end();
+                }
+
+                return;
+            }
+
+            /*
+             * Everything else is a frontend file.
+             */
+            serveStaticFile(
+                req,
+                res,
+                pathname
+            );
+        } catch (error) {
+            console.error(
+                "SERVER ERROR:",
+                error
+            );
+
+            if (!res.headersSent) {
+                res.statusCode = 500;
+
                 res.setHeader(
                     "Content-Type",
                     "application/json"
                 );
-                res.end(
-                    JSON.stringify({
-                        success: false,
-                        message: "Invalid JSON body"
-                    })
-                );
-                return;
             }
-        }
 
-        req.cookies = parseCookies(
-            req.headers.cookie
-        );
-
-        const module = await import(modulePath);
-
-        const handler = module.default;
-
-        if (typeof handler !== "function") {
-            throw new Error(
-                `Invalid API handler: ${modulePath}`
+            res.end(
+                JSON.stringify({
+                    success: false,
+                    message:
+                        "Internal server error"
+                })
             );
         }
+    }
+);
 
-        await handler(
-            req,
-            createResponse(res)
-        );
-
-        if (!res.writableEnded) {
-            res.end();
-        }
-    } catch (error) {
-        console.error("SERVER ERROR:", error);
-
-        if (!res.headersSent) {
-            res.statusCode = 500;
-            res.setHeader(
-                "Content-Type",
-                "application/json"
-            );
-        }
-
-        res.end(
-            JSON.stringify({
-                success: false,
-                message: "Internal server error"
-            })
+server.listen(
+    PORT,
+    "0.0.0.0",
+    () => {
+        console.log(
+            `S STORE running on port ${PORT}`
         );
     }
-});
-
-server.listen(PORT, "0.0.0.0", () => {
-    console.log(
-        `S STORE API running on port ${PORT}`
-    );
-});
+);
