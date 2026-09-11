@@ -15,6 +15,7 @@ const routes = {
     "/api/auth/logout": "./api/auth/logout.js",
 
     "/api/products": "./api/products/index.js",
+    "/api/cart": "./api/cart/index.js",
 
     "/api/admin/setup": "./api/admin/setup.js",
     "/api/admin/products": "./api/admin/products/index.js",
