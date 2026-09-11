@@ -144,32 +144,6 @@ const StoreApp = (() => {
                             )}"
                         >
 
-                            <div class="product-image">
-
-                                ${
-                                    product.image
-
-                                        ? `
-                                            <img
-                                                src="${escapeHtml(
-                                                    product.image
-                                                )}"
-                                                alt="${escapeHtml(
-                                                    product.name
-                                                )}"
-                                            >
-                                        `
-
-                                        : `
-                                            <i
-                                                class="bx bx-image"
-                                            ></i>
-                                        `
-                                }
-
-                            </div>
-
-
                             <div class="product-info">
 
                                 <span
@@ -197,15 +171,6 @@ const StoreApp = (() => {
                                         product.description
                                     )}
                                 </p>
-
-
-                                <span
-                                    class="product-price"
-                                >
-                                    ${formatPrice(
-                                        product.price
-                                    )}
-                                </span>
 
                             </div>
 

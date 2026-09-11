@@ -10,18 +10,33 @@ const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 10000;
 
 const routes = {
+    "/api/health": "./api/health.js",
+
     "/api/auth/login": "./api/auth/login.js",
+    "/api/auth/register": "./api/auth/register.js",
     "/api/auth/me": "./api/auth/me.js",
     "/api/auth/logout": "./api/auth/logout.js",
 
     "/api/products": "./api/products/index.js",
     "/api/cart": "./api/cart/index.js",
 
+    "/api/customer/me": "./api/customer/me.js",
+    "/api/customer/profile": "./api/customer/profile.js",
+
+    "/api/orders": "./api/orders/index.js",
+    "/api/orders/detail": "./api/orders/detail.js",
+    "/api/orders/payment": "./api/orders/payment.js",
+
+    "/api/payments/create-checkout-session": "./api/payments/create-checkout-session.js",
+    "/api/payments/verify-checkout-session": "./api/payments/verify-checkout-session.js",
+
     "/api/admin/setup": "./api/admin/setup.js",
     "/api/admin/products": "./api/admin/products/index.js",
     "/api/admin/products/images": "./api/admin/products/images.js",
     "/api/admin/categories": "./api/admin/categories/index.js",
-    "/api/admin/images/upload": "./api/admin/images/upload.js"
+    "/api/admin/images/upload": "./api/admin/images/upload.js",
+    "/api/admin/images/cleanup": "./api/admin/images/cleanup.js",
+    "/api/admin/orders": "./api/admin/orders/index.js",
 };
 
 const mimeTypes = {
@@ -230,7 +245,8 @@ const server = http.createServer(
         try {
             setCors(req, res);
 
-            const { pathname } = parse(req.url);
+            const { pathname, query } = parse(req.url, true);
+            req.query = query || {};
 
             /*
              * CORS preflight
