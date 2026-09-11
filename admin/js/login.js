@@ -1,7 +1,5 @@
 import { showToast } from "../../js/toast.js";
 
-const API_ORIGIN = "https://bitcoin-topaz.vercel.app";
-
 const form =
     document.getElementById("adminLoginForm");
 
@@ -56,31 +54,24 @@ form.addEventListener(
 
         try {
 
-            const response =
-                await fetch(
-                    `${API_ORIGIN}/api/auth/login`,
-                    {
-                        method: "POST",
+           const response =
+    await fetch(
+        "/api/auth/login",
+        {
+            method: "POST",
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-                        credentials: "include",
+            credentials: "include",
 
-                        body: JSON.stringify({
-
-                            email:
-                                emailInput.value,
-
-                            password:
-                                passwordInput.value
-
-                        })
-
-                    }
-                );
+            body: JSON.stringify({
+                email: emailInput.value,
+                password: passwordInput.value
+            })
+        }
+    );
 
 
             const contentType = response.headers.get("content-type") || "";
