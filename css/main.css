@@ -136,6 +136,9 @@ body {
   align-items: center;
   gap: 8px;
 }
+.auth-actions[data-session-nav] {
+  visibility: hidden;
+}
 .auth-login,
 .auth-signup {
   display: inline-flex;
