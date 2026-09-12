@@ -2239,7 +2239,7 @@ async function loadAdminCustomers() {
 
     if (!table) return;
 
-    table.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;">Loading customers...</td></tr>';
+    table.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;">Loading customers...</td></tr>';
     empty.hidden = true;
     if (message) message.textContent = "";
 
@@ -2254,7 +2254,7 @@ async function loadAdminCustomers() {
         adminCustomers = data.customers || [];
         renderAdminCustomers();
     } catch (error) {
-        table.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;">Unable to load customers.</td></tr>';
+        table.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;">Unable to load customers.</td></tr>';
         if (message) {
             message.textContent = error.message || "Unable to load customers.";
             message.className = "products-message error";
@@ -2296,8 +2296,53 @@ function renderAdminCustomers() {
           <td>${escapeHtml(customer.phone || "-")}</td>
           <td>${new Date(customer.created_at).toLocaleString()}</td>
           <td><span class="product-status ${escapeHtml(customer.role || "customer")}">${escapeHtml(customer.role || "customer")}</span></td>
+          <td>
+            <div class="table-actions">
+              <button class="secondary-button btn-small btn-danger" type="button" data-customer-delete="${escapeHtml(String(customer.id))}" data-customer-name="${escapeHtml(customer.name || 'Customer')}">
+                Delete
+              </button>
+            </div>
+          </td>
         </tr>
     `).join("");
+
+    table.querySelectorAll("[data-customer-delete]").forEach(button => {
+        button.addEventListener("click", async () => {
+            const customerId = button.dataset.customerDelete;
+            const customerName = button.dataset.customerName || "this customer";
+
+            if (!window.confirm(`Delete ${customerName}? This will remove the customer account and related order data.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/customers?id=${encodeURIComponent(customerId)}`, {
+                    method: "DELETE",
+                    credentials: "include",
+                    cache: "no-store"
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Unable to delete customer");
+                }
+
+                await loadAdminCustomers();
+
+                if (message) {
+                    message.textContent = `${customerName} was deleted successfully.`;
+                    message.className = "products-message success";
+                }
+            } catch (error) {
+                if (message) {
+                    message.textContent = error.message || "Unable to delete customer.";
+                    message.className = "products-message error";
+                }
+                console.error("ADMIN CUSTOMER DELETE ERROR:", error);
+            }
+        });
+    });
 
     if (message) {
         message.textContent = "";

@@ -12,7 +12,7 @@ export default async function handler(req, res) {
         const sql = neon(process.env.DATABASE_URL);
         await sql`SELECT 1 AS ok`;
         res.setHeader("Cache-Control", "no-store");
-        return res.status(200).json({ ok: true, service: "tether-temper" });
+        return res.status(200).json({ ok: true, service: "dungeon-house-for-slave-toys" });
     } catch (error) {
         console.error("HEALTH CHECK DATABASE ERROR:", error);
         return res.status(503).json({ ok: false, message: "Database unavailable" });

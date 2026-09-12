@@ -391,7 +391,7 @@ server.listen(
     "0.0.0.0",
     () => {
         console.log(
-            `Tether & Temper running on port ${PORT}`
+            `Dungeon House for Slave Toys running on port ${PORT}`
         );
     }
 );
