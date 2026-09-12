@@ -336,10 +336,65 @@ const StoreApp = (() => {
 
 
     // ========================================
+    // CUSTOMER SESSION
+    // ========================================
+
+    async function syncAccountNavigation() {
+
+        const authActions =
+            document.querySelector(
+                ".auth-actions"
+            );
+
+        if (!authActions) {
+            return;
+        }
+
+        try {
+
+            const response = await fetch(
+                "/api/customer/me",
+                {
+                    credentials: "include",
+                    cache: "no-store"
+                }
+            );
+
+            if (!response.ok) {
+                return;
+            }
+
+            authActions.innerHTML = `
+                <a
+                    href="account.html"
+                    class="auth-login"
+                    aria-label="My account"
+                >
+                    <i class="bx bx-user"></i>
+                    Account
+                </a>
+            `;
+
+        } catch (error) {
+
+            // Leave the guest links visible when the session check is unavailable.
+            console.warn(
+                "CUSTOMER SESSION CHECK ERROR:",
+                error
+            );
+
+        }
+
+    }
+
+
+    // ========================================
     // INITIALIZE
     // ========================================
 
     async function init() {
+
+        await syncAccountNavigation();
 
         try {
             const response = await fetch("/api/products");
