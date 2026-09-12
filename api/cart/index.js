@@ -6,7 +6,23 @@ const sql = neon(process.env.DATABASE_URL);
 async function list(userId) {
     const rows = await sql`
         SELECT ci.id AS "cartItemId", ci.product_id AS id, ci.quantity, ci.options,
-               p.name, p.price, p.stock, p.images
+               p.name, p.price, p.stock,
+               COALESCE(
+                   (
+                       SELECT json_agg(
+                           json_build_object(
+                               'id', pi.id,
+                               'url', pi.image_url,
+                               'alt', pi.alt_text,
+                               'sortOrder', pi.sort_order
+                           )
+                           ORDER BY pi.sort_order ASC
+                       )
+                       FROM product_images pi
+                       WHERE pi.product_id = p.id
+                   ),
+                   '[]'::json
+               ) AS images
         FROM cart_items ci JOIN products p ON p.id = ci.product_id
         WHERE ci.user_id = ${userId} AND p.status = 'active' ORDER BY ci.created_at
     `;
