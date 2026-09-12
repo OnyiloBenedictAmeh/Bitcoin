@@ -37,6 +37,7 @@ const routes = {
     "/api/admin/images/upload": "./api/admin/images/upload.js",
     "/api/admin/images/cleanup": "./api/admin/images/cleanup.js",
     "/api/admin/orders": "./api/admin/orders/index.js",
+    "/api/admin/customers": "./api/admin/customers/index.js",
 };
 
 const mimeTypes = {

@@ -22,6 +22,7 @@
       body {
         margin: 0;
         background: #f5f6f8;
+        overflow-x: hidden;
       }
       .product-images-group {
     margin-top: 20px;
@@ -207,6 +208,8 @@
         max-width: 1400px;
         margin: auto;
         padding: 35px;
+        width: 100%;
+        box-sizing: border-box;
       }
 
       .admin-welcome {
@@ -433,7 +436,7 @@
       .products-table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 850px;
+        min-width: 760px;
       }
 
       .products-table th,
@@ -731,6 +734,44 @@
         .products-toolbar {
           flex-direction: column;
         }
+
+        .products-table {
+          min-width: 0;
+        }
+
+        .products-table-wrapper {
+          overflow-x: auto;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .admin-header {
+          padding: 0 14px;
+          height: 64px;
+        }
+
+        .admin-brand {
+          font-size: 18px;
+        }
+
+        .admin-user {
+          gap: 8px;
+        }
+
+        .admin-logout {
+          padding: 7px 10px;
+          font-size: 12px;
+        }
+
+        .admin-content {
+          padding: 18px 14px;
+        }
+
+        .section-header {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 10px;
+        }
       }
     </style>
   </head>
@@ -742,7 +783,10 @@
 
     <div id="adminDashboard" class="admin-dashboard" hidden>
       <header class="admin-header">
-        <div class="admin-brand">S STORE ADMIN</div>
+        <a href="../index.html" class="logo admin-brand" aria-label="Store home">
+          <span class="logo-mark">S</span>
+          <span class="logo-text">STORE</span>
+        </a>
 
         <div class="admin-user">
           <div class="admin-user-info">
@@ -991,12 +1035,34 @@
         ========================== -->
 
           <section id="section-customers" class="admin-section" hidden>
-            <div class="admin-placeholder">
-              <i class="bx bx-user"></i>
+            <div class="section-header">
+              <div>
+                <h1>Customers</h1>
 
-              <h2>Customers</h2>
+                <p>View all customer accounts created through the storefront.</p>
+              </div>
+            </div>
 
-              <p>Customer management is coming next.</p>
+            <div id="customersMessage" class="products-message"></div>
+
+            <div class="products-table-wrapper">
+              <table class="products-table">
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+
+                <tbody id="adminCustomersTable"></tbody>
+              </table>
+            </div>
+
+            <div id="customersEmpty" class="products-empty" hidden>
+              No customers found.
             </div>
           </section>
         </main>

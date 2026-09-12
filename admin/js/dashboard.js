@@ -44,6 +44,7 @@ let editingCategoryId = null;
 let productImages = [];
 let unsavedUploadedImageUrls = new Set();
 let adminOrders = [];
+let adminCustomers = [];
 /*
 ========================================
 AUTHENTICATION
@@ -189,6 +190,10 @@ if (section === "categories") {
 
 if (section === "orders") {
     loadAdminOrders();
+}
+
+if (section === "customers") {
+    loadAdminCustomers();
 }
 
             }
@@ -1364,6 +1369,7 @@ function initializeDashboard() {
 
     loadAdminProducts();
     loadAdminCategories();
+    loadAdminCustomers();
 
 }
 
@@ -2223,6 +2229,79 @@ async function loadAdminOrders() {
     } catch (error) {
         table.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;">Unable to load orders.</td></tr>';
         console.error("ADMIN ORDERS ERROR:", error);
+    }
+}
+
+async function loadAdminCustomers() {
+    const table = document.getElementById("adminCustomersTable");
+    const empty = document.getElementById("customersEmpty");
+    const message = document.getElementById("customersMessage");
+
+    if (!table) return;
+
+    table.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;">Loading customers...</td></tr>';
+    empty.hidden = true;
+    if (message) message.textContent = "";
+
+    try {
+        const response = await fetch("/api/admin/customers", { credentials: "include", cache: "no-store" });
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Unable to load customers");
+        }
+
+        adminCustomers = data.customers || [];
+        renderAdminCustomers();
+    } catch (error) {
+        table.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;">Unable to load customers.</td></tr>';
+        if (message) {
+            message.textContent = error.message || "Unable to load customers.";
+            message.className = "products-message error";
+        }
+        console.error("ADMIN CUSTOMERS ERROR:", error);
+    }
+}
+
+function renderAdminCustomers() {
+    const table = document.getElementById("adminCustomersTable");
+    const empty = document.getElementById("customersEmpty");
+    const message = document.getElementById("customersMessage");
+
+    if (!table) return;
+
+    const totalCustomers = document.getElementById("totalCustomers");
+    if (totalCustomers) {
+        totalCustomers.textContent = String(adminCustomers.length);
+    }
+
+    if (!adminCustomers.length) {
+        table.innerHTML = "";
+        empty.hidden = false;
+        if (message) {
+            message.textContent = "";
+            message.className = "products-message";
+        }
+        return;
+    }
+
+    empty.hidden = true;
+    table.innerHTML = adminCustomers.map(customer => `
+        <tr>
+          <td>
+            <strong>${escapeHtml(customer.name || "Customer")}</strong>
+            <div class="product-description">ID ${escapeHtml(String(customer.id).slice(0, 8).toUpperCase())}</div>
+          </td>
+          <td>${escapeHtml(customer.email || "-")}</td>
+          <td>${escapeHtml(customer.phone || "-")}</td>
+          <td>${new Date(customer.created_at).toLocaleString()}</td>
+          <td><span class="product-status ${escapeHtml(customer.role || "customer")}">${escapeHtml(customer.role || "customer")}</span></td>
+        </tr>
+    `).join("");
+
+    if (message) {
+        message.textContent = "";
+        message.className = "products-message";
     }
 }
 

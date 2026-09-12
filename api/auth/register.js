@@ -10,6 +10,7 @@ export default async function handler(req, res) {
 
     const name = String(req.body?.name || "").trim();
     const email = String(req.body?.email || "").trim().toLowerCase();
+    const phone = String(req.body?.phone || "").trim();
     const password = String(req.body?.password || "");
     if (name.length < 2 || !/^\S+@\S+\.\S+$/.test(email) || password.length < 8) {
         return res.status(400).json({ success: false, message: "Enter a name, valid email, and password of at least 8 characters" });
@@ -20,9 +21,9 @@ export default async function handler(req, res) {
         if (existing.length) return res.status(409).json({ success: false, message: "An account already uses this email" });
         const passwordHash = await bcrypt.hash(password, 12);
         const users = await sql`
-            INSERT INTO users (name, email, password_hash, role)
-            VALUES (${name}, ${email}, ${passwordHash}, 'customer')
-            RETURNING id, name, email, role, created_at
+            INSERT INTO users (name, email, phone, password_hash, role)
+            VALUES (${name}, ${email}, ${phone || null}, ${passwordHash}, 'customer')
+            RETURNING id, name, email, phone, role, created_at
         `;
         return res.status(201).json({ success: true, user: users[0] });
     } catch (error) {

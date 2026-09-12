@@ -4,6 +4,7 @@ import { showToast } from "./toast.js";
     let mode = "login";
     const form = document.getElementById("authForm");
     const nameField = document.getElementById("nameField");
+    const phoneField = document.getElementById("phoneField");
     const title = document.getElementById("authTitle");
     const submit = document.getElementById("authSubmit");
     const message = document.getElementById("authMessage");
@@ -14,9 +15,12 @@ import { showToast } from "./toast.js";
         mode = nextMode === "register" ? "register" : "login";
         document.querySelectorAll("[data-mode]").forEach(item => item.classList.toggle("active", item.dataset.mode === mode));
         nameField.hidden = mode !== "register";
+        phoneField.hidden = mode !== "register";
         title.textContent = mode === "register" ? "Create account" : "Sign in";
         submit.textContent = mode === "register" ? "Create account" : "Sign in";
-        document.getElementById("authName").required = mode === "register";
+        document.getElementById("authFirstName").required = mode === "register";
+        document.getElementById("authLastName").required = mode === "register";
+        document.getElementById("authPhone").required = false;
         message.textContent = "";
     }
 
@@ -32,7 +36,10 @@ import { showToast } from "./toast.js";
         const password = document.getElementById("authPassword").value;
         try {
             if (mode === "register") {
-                const register = await fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: document.getElementById("authName").value.trim(), email, password }) });
+                const firstName = document.getElementById("authFirstName").value.trim();
+                const lastName = document.getElementById("authLastName").value.trim();
+                const phone = document.getElementById("authPhone").value.trim();
+                const register = await fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: `${firstName} ${lastName}`.trim(), email, phone, password }) });
                 const result = await register.json();
                 if (!register.ok || !result.success) throw new Error(result.message || "Unable to create account");
             }
