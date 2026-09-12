@@ -3006,3 +3006,87 @@ body {
 }
 
 /*# sourceMappingURL=main.css.map */
+
+/* Tether & Temper brand theme */
+:root {
+  --tether-ink: #160d17;
+  --tether-plum: #4b1d48;
+  --tether-wine: #7b274c;
+  --tether-rose: #d69bb7;
+  --tether-ivory: #fbf5f7;
+}
+
+body {
+  background: var(--tether-ivory);
+  color: var(--tether-ink);
+}
+
+.site-header {
+  background: rgba(251, 245, 247, 0.94);
+  border-bottom-color: rgba(75, 29, 72, 0.16);
+}
+
+.logo-mark {
+  background: linear-gradient(145deg, var(--tether-wine), var(--tether-plum));
+  box-shadow: 0 8px 20px rgba(75, 29, 72, 0.25);
+}
+
+.logo-text,
+.hero h1,
+.section-heading h2 {
+  letter-spacing: 0.02em;
+}
+
+.hero {
+  background:
+    radial-gradient(circle at 82% 18%, rgba(214, 155, 183, 0.38), transparent 28rem),
+    linear-gradient(135deg, #fbf5f7 0%, #f0dde7 100%);
+}
+
+.eyebrow,
+.text-link,
+.category-icon,
+.feature-icon {
+  color: var(--tether-wine);
+}
+
+.btn-primary,
+.auth-signup,
+.toggle input:checked + span {
+  background: var(--tether-plum);
+}
+
+.btn-primary:hover,
+.auth-signup:hover {
+  background: var(--tether-wine);
+}
+
+.category-card:hover,
+.product-card:hover,
+.feature:hover {
+  border-color: rgba(123, 39, 76, 0.45);
+  box-shadow: 0 14px 34px rgba(75, 29, 72, 0.12);
+}
+
+.site-footer {
+  background: var(--tether-ink);
+}
+
+.site-footer .logo-text,
+.site-footer h3,
+.site-footer p,
+.site-footer a {
+  color: var(--tether-ivory);
+}
+
+.site-footer a:hover {
+  color: var(--tether-rose);
+}
+.tether-age-note {
+  margin: -10px 0 18px;
+  color: var(--tether-wine);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
