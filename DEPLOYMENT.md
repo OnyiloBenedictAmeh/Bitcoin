@@ -1,4 +1,4 @@
-# S STORE deployment checks
+# Tether & Temper deployment checks
 
 1. Add every variable listed in `.env.example` to Vercel for Preview and Production.
 2. Confirm the Neon migration `db/migrations/001_commerce_foundation.sql` has run.

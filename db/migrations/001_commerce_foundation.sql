@@ -1,4 +1,4 @@
--- S STORE: run once against the Neon database before deploying order/account APIs.
+-- Tether & Temper: run once against the Neon database before deploying order/account APIs.
 -- No receiving wallet/account details are stored here; configure those as environment variables.
 
 ALTER TABLE orders

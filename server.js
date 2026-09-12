@@ -391,7 +391,7 @@ server.listen(
     "0.0.0.0",
     () => {
         console.log(
-            `S STORE running on port ${PORT}`
+            `Tether & Temper running on port ${PORT}`
         );
     }
 );
